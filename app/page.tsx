@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { readFileSync, statSync } from 'fs'
+import { readFileSync } from 'fs'
 import { join } from 'path'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
 import { getSummary, getHoldings, getTrades, getAudits, getLearnings, getActiveTraderProfile } from '@/lib/data'
@@ -19,10 +19,8 @@ export default function Home() {
 async function Dashboard() {
   const profilePath = join(process.cwd(), 'docs/trader-profile.md')
   let traderProfile = ''
-  let profileUpdatedAt = new Date().toISOString()
   try {
     traderProfile = readFileSync(profilePath, 'utf-8')
-    profileUpdatedAt = statSync(profilePath).mtime.toISOString()
   } catch { /* file missing — tab shows empty state */ }
 
   const [summary, holdings, trades, audits, learnings, dbProfile] = await Promise.all([
@@ -36,7 +34,7 @@ async function Dashboard() {
 
   // Prefer DB profile (updated by monthly reflection), fall back to bundled file
   const activeProfile = dbProfile?.content ?? traderProfile
-  const activeProfileUpdatedAt = dbProfile?.created_at ?? profileUpdatedAt
+  const activeProfileUpdatedAt = dbProfile?.created_at ?? new Date().toISOString()
   const activeProfileVersion = dbProfile?.version ?? 1
 
   return (
