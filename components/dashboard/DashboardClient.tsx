@@ -20,13 +20,14 @@ interface Props {
   profileUpdatedAt: string
   profileVersion: number
   usingTradingTeam: boolean
+  liveStartDate?: string
 }
 
 function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
   const [tab, setTab] = useState('summary')
 
   const portfolioValue = summary?.portfolio.total_value ?? 50000
@@ -85,7 +86,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
         <div className="px-4 md:px-6 py-5">
           <TabsContent value="summary" className="mt-0">
             {summary ? (
-              <SummaryTab data={summary} />
+              <SummaryTab data={summary} liveStartDate={liveStartDate} />
             ) : (
               <EmptyState message="Portfolio data is loading. Make sure your Supabase and API keys are configured." />
             )}

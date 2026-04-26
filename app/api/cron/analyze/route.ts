@@ -54,8 +54,17 @@ export async function GET(req: NextRequest) {
   const recentTrades: Trade[] = tradesRes.data ?? []
   const pastAnalyses: DailyAnalysis[] = analysesRes.data ?? []
 
+  // Load Claude's last watchlist update so it persists across sessions
+  const { data: latestAnalysis } = await supabaseAdmin
+    .from('daily_analyses')
+    .select('watchlist')
+    .order('date', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const savedWatchlist: string[] = (latestAnalysis?.watchlist as string[]) ?? []
   const heldSymbols = holdings.map(h => h.symbol)
-  const watchlist = [...new Set([...DEFAULT_WATCHLIST, ...heldSymbols])]
+  const watchlist = [...new Set([...DEFAULT_WATCHLIST, ...savedWatchlist, ...heldSymbols])]
   const quotes = await getQuotes(watchlist)
   const priceMap = Object.fromEntries(quotes.map(q => [q.symbol, q.price]))
 
@@ -98,6 +107,7 @@ export async function GET(req: NextRequest) {
       journal: analysis.journal,
       decisions: valid,
       market_summary: analysis.market_summary,
+      watchlist: analysis.watchlist_update ?? [],
     }),
     supabaseAdmin.from('audits').upsert({
       date: today,

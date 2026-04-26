@@ -1,0 +1,2 @@
+ALTER TABLE daily_analyses
+  ADD COLUMN IF NOT EXISTS watchlist JSONB DEFAULT '[]'::JSONB;

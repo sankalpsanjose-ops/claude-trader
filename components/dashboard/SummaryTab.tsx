@@ -14,9 +14,10 @@ function fmtSigned(n: number) {
 
 interface Props {
   data: PortfolioSummary
+  liveStartDate?: string
 }
 
-export function SummaryTab({ data }: Props) {
+export function SummaryTab({ data, liveStartDate }: Props) {
   const { portfolio, total_pnl, total_pnl_pct, annualised_return, days_running, today_pnl, open_positions } = data
 
   return (
@@ -73,7 +74,7 @@ export function SummaryTab({ data }: Props) {
               Base <span className="text-[#e6edf3]">{fmtINR(50000)}</span>
             </div>
           </div>
-          <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} />
+          <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} liveStartDate={liveStartDate} />
         </div>
       </div>
 

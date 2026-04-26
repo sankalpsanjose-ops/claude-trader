@@ -6,6 +6,7 @@ import type { PerformancePoint } from '@/types'
 interface Props {
   data: PerformancePoint[]
   benchmark?: PerformancePoint[]
+  liveStartDate?: string
 }
 
 function formatDate(dateStr: string) {
@@ -17,7 +18,7 @@ function formatINR(value: number) {
   return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function PerformanceChart({ data, benchmark = [] }: Props) {
+export function PerformanceChart({ data, benchmark = [], liveStartDate }: Props) {
   if (data.length < 2) {
     return (
       <div className="flex items-center justify-center h-24 text-sm text-[#6e7681]">
@@ -33,6 +34,14 @@ export function PerformanceChart({ data, benchmark = [] }: Props) {
     claude: p.value,
     nifty: benchmarkMap.get(p.date) ?? null,
   }))
+
+  // Find the formatted x-axis label for the first live data point (>= liveStartDate)
+  const liveStartFormatted = liveStartDate
+    ? (() => {
+        const idx = data.findIndex(p => p.date >= liveStartDate)
+        return idx >= 0 ? chartData[idx].date : null
+      })()
+    : null
 
   const lastValue = data[data.length - 1].value
   const isUp = lastValue >= 50000
@@ -82,6 +91,14 @@ export function PerformanceChart({ data, benchmark = [] }: Props) {
             ]}
           />
           <ReferenceLine y={50000} stroke="#484f58" strokeDasharray="4 3" label={{ value: '₹50k', position: 'insideTopRight', fontSize: 10, fill: '#484f58' }} />
+          {liveStartFormatted && (
+            <ReferenceLine
+              x={liveStartFormatted}
+              stroke="#e3b341"
+              strokeDasharray="4 3"
+              label={{ value: 'Live', position: 'insideTopLeft', fontSize: 10, fill: '#e3b341' }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="claude"

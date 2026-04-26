@@ -48,6 +48,7 @@ async function Dashboard() {
       profileUpdatedAt={activeProfileUpdatedAt}
       profileVersion={activeProfileVersion}
       usingTradingTeam={process.env.USE_TRADING_TEAM === 'true'}
+      liveStartDate={process.env.LIVE_START_DATE}
     />
   )
 }
