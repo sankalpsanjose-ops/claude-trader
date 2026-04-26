@@ -5,7 +5,84 @@ interface Props {
   lastUpdated: string
   version: number
   learnings: Learning[]
+  usingTradingTeam: boolean
 }
+
+interface AgentDef {
+  callsign: string
+  role: string
+  type: string
+  typeColour: string
+  description: string
+  alwaysActive: boolean
+}
+
+const AGENTS: AgentDef[] = [
+  {
+    callsign: 'ALPHA',
+    role: 'World Markets',
+    type: 'Pure Data',
+    typeColour: 'bg-[#21262d] text-[#8b949e]',
+    description: 'Fetches global indices (S&P 500, FTSE, Nikkei, Hang Seng, Euro Stoxx), commodities (crude oil, gold, natural gas), and forex (USD/INR, Dollar Index) before every analysis.',
+    alwaysActive: false,
+  },
+  {
+    callsign: 'BRAVO',
+    role: 'Technical Analysis',
+    type: 'Pure TS',
+    typeColour: 'bg-[#21262d] text-[#8b949e]',
+    description: 'Computes RSI-14, 20/50-day SMAs, and 10-day price momentum for all held and watchlist stocks using 60 days of historical OHLC data.',
+    alwaysActive: false,
+  },
+  {
+    callsign: 'CHARLIE',
+    role: 'News & Geopolitics',
+    type: 'Haiku',
+    typeColour: 'bg-[#1f3a5f] text-[#79c0ff]',
+    description: 'Reads market headlines and flags geopolitical risks — wars, sanctions, trade disputes, elections, central bank surprises — that could move Indian equities.',
+    alwaysActive: false,
+  },
+  {
+    callsign: 'DELTA',
+    role: 'Research',
+    type: 'Haiku',
+    typeColour: 'bg-[#1f3a5f] text-[#79c0ff]',
+    description: 'Analyses P/E ratios, analyst price targets, and recommendation consensus for held and watchlist stocks sourced from Yahoo Finance fundamentals.',
+    alwaysActive: false,
+  },
+  {
+    callsign: 'ECHO',
+    role: 'Supervisor',
+    type: 'Haiku',
+    typeColour: 'bg-[#1f3a5f] text-[#79c0ff]',
+    description: 'Synthesises Alpha–Delta reports, identifies where specialists agree or conflict, and writes a final intelligence brief for the Portfolio Manager.',
+    alwaysActive: false,
+  },
+  {
+    callsign: 'FOXTROT',
+    role: 'Portfolio Manager',
+    type: 'Sonnet',
+    typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
+    description: 'Makes the final buy/sell/hold decisions using the intelligence brief (team mode) or raw market data (solo mode). Writes the daily journal and captures one trading lesson.',
+    alwaysActive: true,
+  },
+  {
+    callsign: 'GOLF',
+    role: 'Validator',
+    type: 'Pure TS',
+    typeColour: 'bg-[#21262d] text-[#8b949e]',
+    description: 'Enforces hard trading rules — ₹5,000 cash reserve, 20% position limit, valid NSE/BSE symbol suffixes — before any decision can reach execution.',
+    alwaysActive: true,
+  },
+  {
+    callsign: 'HOTEL',
+    role: 'Auditor',
+    type: 'Haiku',
+    typeColour: 'bg-[#1f3a5f] text-[#79c0ff]',
+    description: 'Cross-checks every trade decision against real Yahoo Finance prices to flag hallucinated reasoning or logic that contradicts actual market data.',
+    alwaysActive: true,
+  },
+]
 
 const CATEGORY_COLOURS: Record<string, string> = {
   sizing:   'bg-[#1f3a5f] text-[#79c0ff]',
@@ -143,7 +220,7 @@ function inlineFormat(text: string): string {
     .replace(/`(.+?)`/g, '<code class="text-[#79c0ff] bg-[#161b22] px-1 rounded text-[11px] font-mono">$1</code>')
 }
 
-export function StrategyTab({ content, lastUpdated, version, learnings }: Props) {
+export function StrategyTab({ content, lastUpdated, version, learnings, usingTradingTeam }: Props) {
   const dailyLearnings = learnings.filter(l => l.source === 'daily').slice(0, 30)
   const monthlyReflections = learnings.filter(l => l.source === 'monthly_reflection')
 
@@ -164,6 +241,49 @@ export function StrategyTab({ content, lastUpdated, version, learnings }: Props)
           {version > 1 && (
             <div className="text-[10px] text-[#3fb950] mt-0.5">Evolved from backtest learnings</div>
           )}
+        </div>
+      </div>
+
+      {/* Agent Roster */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
+          <div>
+            <div className="font-semibold text-[#e6edf3]">Trading Intelligence System</div>
+            <div className="text-xs text-[#8b949e] mt-0.5">
+              8 agents · 3 always active · 5 additional in team mode
+            </div>
+          </div>
+          <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide shrink-0 ${
+            usingTradingTeam
+              ? 'bg-[#1a3a1a] text-[#3fb950]'
+              : 'bg-[#21262d] text-[#6e7681]'
+          }`}>
+            {usingTradingTeam ? 'Team Mode Active' : 'Solo Mode'}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#30363d]">
+          {AGENTS.map(agent => {
+            const isActive = agent.alwaysActive || usingTradingTeam
+            return (
+              <div key={agent.callsign} className={`bg-[#161b22] p-4 transition-opacity ${!isActive ? 'opacity-40' : ''}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[13px] font-mono font-bold text-[#e6edf3] tracking-widest">
+                    {agent.callsign}
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${agent.typeColour}`}>
+                    {agent.type}
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#58a6ff] font-semibold mb-2">{agent.role}</div>
+                <p className="text-[11px] text-[#6e7681] leading-relaxed">{agent.description}</p>
+                <div className={`mt-3 text-[10px] font-semibold ${
+                  agent.alwaysActive ? 'text-[#3fb950]' : isActive ? 'text-[#3fb950]' : 'text-[#484f58]'
+                }`}>
+                  {agent.alwaysActive ? '● Always active' : isActive ? '● Active' : '○ Team mode only'}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 

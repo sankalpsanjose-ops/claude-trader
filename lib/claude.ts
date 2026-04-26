@@ -34,7 +34,7 @@ ${traderProfile}
 RESPONSE FORMAT: You must respond with valid JSON only. No prose outside the JSON.`
 }
 
-interface AgentInput {
+export interface AgentInput {
   portfolio_cash: number
   portfolio_total_value: number
   total_pnl: number
@@ -45,6 +45,8 @@ interface AgentInput {
   past_analyses: DailyAnalysis[]
   today_date: string
   traderProfile?: string
+  /** Injected by the trading team orchestrator (team.ts) before calling Foxtrot */
+  teamContext?: string
 }
 
 export interface AgentOutput {
@@ -94,7 +96,7 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
         `  [${a.date}] ${a.journal.slice(0, 200)}...`
       ).join('\n')
 
-  const userMessage = `Today is ${input.today_date}. Here is my current situation:
+  const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}Today is ${input.today_date}. Here is my current situation:
 
 PORTFOLIO
   Cash available: ₹${input.portfolio_cash.toFixed(2)}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getQuotes, DEFAULT_WATCHLIST } from '@/lib/yahoo'
 import { runDailyAnalysis, loadTraderProfileFromFile } from '@/lib/claude'
+import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
   const totalPnl = totalValue - 50000
   const totalPnlPct = (totalPnl / 50000) * 100
 
-  const analysis = await runDailyAnalysis({
+  const agentInput = {
     portfolio_cash: portfolio.cash,
     portfolio_total_value: totalValue,
     total_pnl: totalPnl,
@@ -76,7 +77,11 @@ export async function GET(req: NextRequest) {
     past_analyses: pastAnalyses,
     today_date: today,
     traderProfile,
-  })
+  }
+
+  const analysis = process.env.USE_TRADING_TEAM === 'true'
+    ? await runTradingTeam(agentInput)
+    : await runDailyAnalysis(agentInput)
 
   const { valid, rejected } = validateDecisions(analysis.decisions, {
     cash: portfolio.cash,

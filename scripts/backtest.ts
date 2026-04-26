@@ -52,6 +52,23 @@ interface Holding { symbol: string; name: string; exchange: string; quantity: nu
 interface Trade   { symbol: string; action: string; quantity: number; price: number; rationale: string; realised_pnl: number | null; executed_at: string }
 interface Analysis{ date: string; journal: string }
 
+// ─── Team-mode utility ─────────────────────────────────────────────────────
+// Converts the backtest's date-indexed HistoryMap into symbol-indexed close arrays
+// suitable for Bravo's RSI/SMA computation when USE_TRADING_TEAM=true.
+// type TransposedHistory = Record<string, number[]>  // symbol → ordered close prices
+function transposeHistory(history: HistoryMap, upToDate: string): Record<string, number[]> {
+  const dates = Object.keys(history).sort()
+  const relevantDates = dates.filter(d => d <= upToDate).slice(-60)
+  const result: Record<string, number[]> = {}
+  for (const date of relevantDates) {
+    for (const [symbol, bar] of Object.entries(history[date] ?? {})) {
+      if (!result[symbol]) result[symbol] = []
+      result[symbol].push(bar.close)
+    }
+  }
+  return result
+}
+
 // ─── Fetch all historical data upfront ─────────────────────────────────────
 
 async function fetchAllHistory(): Promise<HistoryMap> {

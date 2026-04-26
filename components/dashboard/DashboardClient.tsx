@@ -19,13 +19,14 @@ interface Props {
   traderProfile: string
   profileUpdatedAt: string
   profileVersion: number
+  usingTradingTeam: boolean
 }
 
 function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, traderProfile, profileUpdatedAt, profileVersion }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam }: Props) {
   const [tab, setTab] = useState('summary')
 
   const portfolioValue = summary?.portfolio.total_value ?? 50000
@@ -47,6 +48,13 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           </div>
           <span className="text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2.5 py-1 rounded-full font-semibold tracking-wide">
             Paper Trading
+          </span>
+          <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide ${
+            usingTradingTeam
+              ? 'bg-[#1a3a1a] text-[#3fb950]'
+              : 'bg-[#21262d] text-[#6e7681]'
+          }`}>
+            {usingTradingTeam ? 'Trading Team' : 'Solo Agent'}
           </span>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -96,7 +104,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           </TabsContent>
 
           <TabsContent value="strategy" className="mt-0">
-            <StrategyTab content={traderProfile} lastUpdated={profileUpdatedAt} version={profileVersion} learnings={learnings} />
+            <StrategyTab content={traderProfile} lastUpdated={profileUpdatedAt} version={profileVersion} learnings={learnings} usingTradingTeam={usingTradingTeam} />
           </TabsContent>
         </div>
       </Tabs>
