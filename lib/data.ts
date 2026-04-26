@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase'
 import { getCurrentPrices } from '@/lib/yahoo'
 import { enrichHoldings, calcTotalValue, calcSectorAllocation } from '@/lib/trading'
-import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile } from '@/types'
+import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile, PendingTrade } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinanceClass = require('yahoo-finance2').default
@@ -110,6 +110,12 @@ export async function getAudits(): Promise<DailyAudit[]> {
 export async function getLearnings(): Promise<Learning[]> {
   const supabase = getSupabase()
   const { data } = await supabase.from('learnings').select('*').order('date', { ascending: false })
+  return data ?? []
+}
+
+export async function getPendingTrades(): Promise<PendingTrade[]> {
+  const supabase = getSupabase()
+  const { data } = await supabase.from('pending_trades').select('*').order('decided_at', { ascending: true })
   return data ?? []
 }
 

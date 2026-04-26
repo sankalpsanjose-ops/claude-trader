@@ -8,7 +8,7 @@ import { HoldingsTab } from './HoldingsTab'
 import { TradesTab } from './TradesTab'
 import { AuditTab } from './AuditTab'
 import { StrategyTab } from './StrategyTab'
-import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning } from '@/types'
+import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade } from '@/types'
 
 interface Props {
   summary: PortfolioSummary | null
@@ -16,6 +16,7 @@ interface Props {
   trades: Trade[]
   audits: DailyAudit[]
   learnings: Learning[]
+  pendingTrades: PendingTrade[]
   traderProfile: string
   profileUpdatedAt: string
   profileVersion: number
@@ -27,7 +28,7 @@ function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
   const [tab, setTab] = useState('summary')
 
   const portfolioValue = summary?.portfolio.total_value ?? 50000
@@ -101,7 +102,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           </TabsContent>
 
           <TabsContent value="audit" className="mt-0">
-            <AuditTab audits={audits} />
+            <AuditTab audits={audits} pendingTrades={pendingTrades} />
           </TabsContent>
 
           <TabsContent value="strategy" className="mt-0">

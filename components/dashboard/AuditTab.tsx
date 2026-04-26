@@ -2,23 +2,77 @@ import { Badge } from '@/components/ui/badge'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import type { DailyAudit } from '@/types'
+import type { DailyAudit, PendingTrade } from '@/types'
 
 interface Props {
   audits: DailyAudit[]
+  pendingTrades: PendingTrade[]
 }
 
-export function AuditTab({ audits }: Props) {
-  if (audits.length === 0) {
-    return (
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-12 text-center text-[#6e7681] text-sm">
-        No audit records yet — they appear after the first end-of-day analysis runs.
-      </div>
-    )
-  }
-
+export function AuditTab({ audits, pendingTrades }: Props) {
   return (
     <div className="space-y-4">
+      {/* Pending trades queue */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="font-semibold text-[#e6edf3]">Queued for Tomorrow's Open</div>
+            {pendingTrades.length > 0 && (
+              <span className="text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2 py-0.5 rounded-full font-semibold">
+                {pendingTrades.length} trade{pendingTrades.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+          <div className="text-xs text-[#8b949e]">Executes at market open</div>
+        </div>
+        {pendingTrades.length === 0 ? (
+          <div className="px-4 py-8 text-center text-[#6e7681] text-sm">
+            No trades queued — run today's analysis to generate decisions.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-[#30363d] hover:bg-transparent">
+                  <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Symbol</TableHead>
+                  <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Action</TableHead>
+                  <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">Qty</TableHead>
+                  <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Exchange</TableHead>
+                  <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Rationale</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingTrades.map(t => (
+                  <TableRow key={t.id} className="border-[#21262d] hover:bg-[#1c2128] align-top">
+                    <TableCell className="font-mono text-[#e6edf3] font-semibold">{t.symbol}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={`text-[11px] font-semibold ${
+                          t.action === 'BUY'
+                            ? 'border-[#3fb950] text-[#3fb950]'
+                            : 'border-[#f85149] text-[#f85149]'
+                        }`}
+                      >
+                        {t.action}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-[#e6edf3] font-mono">{t.quantity}</TableCell>
+                    <TableCell className="text-[#8b949e] text-xs">{t.exchange}</TableCell>
+                    <TableCell className="text-xs text-[#8b949e] max-w-[340px]">{t.rationale}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+
+      {audits.length === 0 ? (
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-12 text-center text-[#6e7681] text-sm">
+          No audit records yet — they appear after the first end-of-day analysis runs.
+        </div>
+      ) : (<>
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
@@ -116,6 +170,7 @@ export function AuditTab({ audits }: Props) {
           </Table>
         </div>
       </div>
+      </>)}
     </div>
   )
 }

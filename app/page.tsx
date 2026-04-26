@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
-import { getSummary, getHoldings, getTrades, getAudits, getLearnings, getActiveTraderProfile } from '@/lib/data'
+import { getSummary, getHoldings, getTrades, getAudits, getLearnings, getActiveTraderProfile, getPendingTrades } from '@/lib/data'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,13 +23,14 @@ async function Dashboard() {
     traderProfile = readFileSync(profilePath, 'utf-8')
   } catch { /* file missing — tab shows empty state */ }
 
-  const [summary, holdings, trades, audits, learnings, dbProfile] = await Promise.all([
+  const [summary, holdings, trades, audits, learnings, dbProfile, pendingTrades] = await Promise.all([
     getSummary().catch(() => null),
     getHoldings().catch(() => []),
     getTrades().catch(() => []),
     getAudits().catch(() => []),
     getLearnings().catch(() => []),
     getActiveTraderProfile().catch(() => null),
+    getPendingTrades().catch(() => []),
   ])
 
   // Prefer DB profile (updated by monthly reflection), fall back to bundled file
@@ -44,6 +45,7 @@ async function Dashboard() {
       trades={trades}
       audits={audits}
       learnings={learnings}
+      pendingTrades={pendingTrades}
       traderProfile={activeProfile}
       profileUpdatedAt={activeProfileUpdatedAt}
       profileVersion={activeProfileVersion}
