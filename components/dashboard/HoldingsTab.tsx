@@ -25,7 +25,10 @@ export function HoldingsTab({ holdings }: Props) {
     <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d]">
         <div className="font-semibold text-[#e6edf3]">Current Holdings</div>
-        <div className="text-sm text-[#8b949e]">{holdings.length} positions</div>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-[#484f58]">Prices via Yahoo Finance · updated on page load</span>
+          <span className="text-sm text-[#8b949e]">{holdings.length} positions</span>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <Table>

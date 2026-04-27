@@ -81,5 +81,6 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
 
   // Phase 3: Foxtrot (Portfolio Manager) decides with full intelligence context injected
   const teamContext = buildTeamContext(echoReport, alphaReport)
-  return runDailyAnalysis({ ...input, teamContext })
+  const result = await runDailyAnalysis({ ...input, teamContext })
+  return { ...result, team_brief: teamContext }
 }

@@ -287,6 +287,29 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         </div>
       </div>
 
+      {/* Daily Schedule */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d]">
+          <div className="font-semibold text-[#e6edf3]">Daily Schedule</div>
+          <div className="text-xs text-[#8b949e] mt-0.5">All times IST · Mon–Fri only</div>
+        </div>
+        <div className="divide-y divide-[#21262d]">
+          {[
+            { time: '9:20 AM', label: 'Execute', desc: 'Pending trades placed at market open via execute cron', color: '#3fb950' },
+            { time: '3:35 PM', label: 'Analyse', desc: 'Post-close analysis runs · Trading Team makes next-day decisions · pending_trades written', color: '#58a6ff' },
+            { time: '4:30 PM · 1st of month', label: 'Monthly Reflect', desc: 'Foxtrot reviews the month · trader profile updated · new version written to changelog', color: '#e3b341' },
+          ].map(({ time, label, desc, color }) => (
+            <div key={label} className="px-4 py-3 flex items-start gap-4">
+              <div className="font-mono text-xs shrink-0 w-36 mt-0.5" style={{ color }}>{time}</div>
+              <div>
+                <div className="text-sm font-semibold text-[#e6edf3]">{label}</div>
+                <div className="text-xs text-[#8b949e] mt-0.5">{desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Monthly reflections — shown first if they exist */}
       {monthlyReflections.length > 0 && (
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">

@@ -119,6 +119,15 @@ export async function getPendingTrades(): Promise<PendingTrade[]> {
   return data ?? []
 }
 
+export async function getTraderProfiles(): Promise<TraderProfile[]> {
+  const supabase = getSupabase()
+  const { data } = await supabase
+    .from('trader_profile')
+    .select('*')
+    .order('version', { ascending: false })
+  return data ?? []
+}
+
 export async function getActiveTraderProfile(): Promise<TraderProfile | null> {
   const supabase = getSupabase()
   const { data } = await supabase

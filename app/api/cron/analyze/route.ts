@@ -108,6 +108,7 @@ export async function GET(req: NextRequest) {
       decisions: valid,
       market_summary: analysis.market_summary,
       watchlist: analysis.watchlist_update ?? [],
+      team_brief: analysis.team_brief ?? null,
     }),
     supabaseAdmin.from('audits').upsert({
       date: today,

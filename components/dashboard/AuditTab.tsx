@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -7,11 +10,38 @@ import type { DailyAudit, PendingTrade } from '@/types'
 interface Props {
   audits: DailyAudit[]
   pendingTrades: PendingTrade[]
+  latestTeamBrief?: string
 }
 
-export function AuditTab({ audits, pendingTrades }: Props) {
+export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
+  const [briefOpen, setBriefOpen] = useState(false)
   return (
     <div className="space-y-4">
+      {/* Intelligence brief */}
+      {latestTeamBrief && (
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+          <button
+            onClick={() => setBriefOpen(o => !o)}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#1c2128] transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <div className="font-semibold text-[#e6edf3]">Intelligence Brief</div>
+              <span className="text-[11px] bg-[#3fb950]/10 text-[#3fb950] border border-[#3fb950]/30 px-2 py-0.5 rounded font-semibold">
+                Trading Team
+              </span>
+            </div>
+            <span className="text-[#8b949e] text-xs">{briefOpen ? '▲ collapse' : '▼ expand'}</span>
+          </button>
+          {briefOpen && (
+            <div className="border-t border-[#30363d] px-4 py-4">
+              <pre className="whitespace-pre-wrap text-xs font-mono text-[#8b949e] leading-relaxed">
+                {latestTeamBrief}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Pending trades queue */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
@@ -59,7 +89,7 @@ export function AuditTab({ audits, pendingTrades }: Props) {
                     </TableCell>
                     <TableCell className="text-right text-[#e6edf3] font-mono">{t.quantity}</TableCell>
                     <TableCell className="text-[#8b949e] text-xs">{t.exchange}</TableCell>
-                    <TableCell className="text-xs text-[#8b949e] max-w-[340px]">{t.rationale}</TableCell>
+                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[200px] max-w-[400px]">{t.rationale}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -160,7 +190,7 @@ export function AuditTab({ audits, pendingTrades }: Props) {
                         : <span className="text-[#484f58]">All decisions passed</span>
                       }
                     </TableCell>
-                    <TableCell className="text-xs text-[#8b949e] max-w-[200px]">
+                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[160px] max-w-[280px]">
                       {a.sanity_notes || '—'}
                     </TableCell>
                   </TableRow>

@@ -63,6 +63,8 @@ export interface AgentOutput {
     insight: string
     category: 'sizing' | 'exits' | 'patience' | 'sector' | 'risk' | 'process'
   }
+  /** Set by runTradingTeam — Echo's intelligence brief passed to Foxtrot */
+  team_brief?: string
 }
 
 export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> {

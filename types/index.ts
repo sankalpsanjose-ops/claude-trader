@@ -47,6 +47,7 @@ export interface DailyAnalysis {
   journal: string
   decisions: TradeDecision[]
   market_summary: string
+  team_brief?: string
   created_at: string
 }
 

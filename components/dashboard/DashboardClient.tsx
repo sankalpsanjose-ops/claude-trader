@@ -8,7 +8,8 @@ import { HoldingsTab } from './HoldingsTab'
 import { TradesTab } from './TradesTab'
 import { AuditTab } from './AuditTab'
 import { StrategyTab } from './StrategyTab'
-import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade } from '@/types'
+import { ChangelogTab } from './ChangelogTab'
+import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade, TraderProfile } from '@/types'
 
 interface Props {
   summary: PortfolioSummary | null
@@ -17,6 +18,7 @@ interface Props {
   audits: DailyAudit[]
   learnings: Learning[]
   pendingTrades: PendingTrade[]
+  traderProfiles: TraderProfile[]
   traderProfile: string
   profileUpdatedAt: string
   profileVersion: number
@@ -28,7 +30,7 @@ function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfiles, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
   const [tab, setTab] = useState('summary')
 
   const portfolioValue = summary?.portfolio.total_value ?? 50000
@@ -72,7 +74,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6">
           <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
-            {(['summary', 'holdings', 'trades', 'audit', 'strategy'] as const).map(t => (
+            {(['summary', 'holdings', 'trades', 'audit', 'strategy', 'changelog'] as const).map(t => (
               <TabsTrigger
                 key={t}
                 value={t}
@@ -102,11 +104,15 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           </TabsContent>
 
           <TabsContent value="audit" className="mt-0">
-            <AuditTab audits={audits} pendingTrades={pendingTrades} />
+            <AuditTab audits={audits} pendingTrades={pendingTrades} latestTeamBrief={summary?.latest_analysis?.team_brief} />
           </TabsContent>
 
           <TabsContent value="strategy" className="mt-0">
             <StrategyTab content={traderProfile} lastUpdated={profileUpdatedAt} version={profileVersion} learnings={learnings} usingTradingTeam={usingTradingTeam} />
+          </TabsContent>
+
+          <TabsContent value="changelog" className="mt-0">
+            <ChangelogTab profiles={traderProfiles} />
           </TabsContent>
         </div>
       </Tabs>
