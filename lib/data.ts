@@ -65,7 +65,9 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
 
   // Performance history: use snapshots + inject today's live value as final point
   const todayStr = today.toISOString().split('T')[0]
-  const history = snapshots.map((s: { date: string; total_value: number }) => ({ date: s.date, value: s.total_value }))
+  const history = snapshots
+    .filter((s: { date: string }) => s.date >= portfolio.inception_date)
+    .map((s: { date: string; total_value: number }) => ({ date: s.date, value: s.total_value }))
   if (history.at(-1)?.date !== todayStr) {
     history.push({ date: todayStr, value: totalValue })
   } else {
