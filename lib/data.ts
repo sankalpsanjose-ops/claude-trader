@@ -9,7 +9,9 @@ const yf = new YahooFinanceClass({ suppressNotices: ['yahooSurvey', 'ripHistoric
 
 async function fetchBenchmark(from: string, baseValue: number): Promise<PerformancePoint[]> {
   try {
-    const rows = await yf.historical('^NSEI', { period1: from, period2: new Date().toISOString().split('T')[0], interval: '1d' })
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const rows = await yf.historical('^NSEI', { period1: from, period2: tomorrow.toISOString().split('T')[0], interval: '1d' })
     if (!rows?.length) return []
     const base = rows[0].adjclose ?? rows[0].close ?? 0
     if (!base) return []
