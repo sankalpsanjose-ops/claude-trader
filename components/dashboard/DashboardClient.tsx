@@ -41,6 +41,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
   const lastUpdated = new Date().toLocaleTimeString('en-IN', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
     timeZoneName: 'short',
   })
 
