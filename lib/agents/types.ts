@@ -46,3 +46,11 @@ export interface EchoReport {
   topOpportunities: string[]
   topRisks: string[]
 }
+
+export interface AgentReports {
+  alpha: AlphaReport
+  bravo: BravoReport
+  charlie: CharlieReport
+  delta: DeltaReport
+  echo: EchoReport
+}

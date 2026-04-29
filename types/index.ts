@@ -48,6 +48,7 @@ export interface DailyAnalysis {
   decisions: TradeDecision[]
   market_summary: string
   team_brief?: string
+  agent_reports?: import('@/lib/agents/types').AgentReports
   created_at: string
 }
 

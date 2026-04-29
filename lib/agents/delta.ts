@@ -33,7 +33,7 @@ Respond with JSON only — no prose outside the JSON:
       "trailingPE": 18.5,
       "analystTargetUpside": 12.3,
       "recommendation": "buy",
-      "rationale": "one sentence"
+      "rationale": "2-3 sentences. State the valuation verdict (cheap/fair/expensive vs sector average), cite the specific P/E or analyst target upside number that drives it, and note one key business quality factor (growth rate, ROE, margin trend, or debt level)."
     }
   }
 }
@@ -43,7 +43,7 @@ Use null for trailingPE or analystTargetUpside when data is unavailable.`
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
+      max_tokens: 2500,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = msg.content[0].type === 'text' ? msg.content[0].text : ''

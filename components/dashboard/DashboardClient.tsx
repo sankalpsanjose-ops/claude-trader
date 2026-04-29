@@ -9,7 +9,8 @@ import { TradesTab } from './TradesTab'
 import { AuditTab } from './AuditTab'
 import { StrategyTab } from './StrategyTab'
 import { ChangelogTab } from './ChangelogTab'
-import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade, TraderProfile } from '@/types'
+import { DecisionTrailTab } from './DecisionTrailTab'
+import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade, TraderProfile, DailyAnalysis } from '@/types'
 
 interface Props {
   summary: PortfolioSummary | null
@@ -19,6 +20,7 @@ interface Props {
   learnings: Learning[]
   pendingTrades: PendingTrade[]
   traderProfiles: TraderProfile[]
+  analyses: DailyAnalysis[]
   traderProfile: string
   profileUpdatedAt: string
   profileVersion: number
@@ -30,7 +32,7 @@ function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfiles, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfiles, analyses, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
   const [tab, setTab] = useState('summary')
 
   const portfolioValue = summary?.portfolio.total_value ?? 50000
@@ -74,7 +76,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6">
           <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
-            {(['summary', 'holdings', 'trades', 'audit', 'strategy', 'changelog'] as const).map(t => (
+            {(['summary', 'holdings', 'trades', 'audit', 'trail', 'strategy', 'changelog'] as const).map(t => (
               <TabsTrigger
                 key={t}
                 value={t}
@@ -105,6 +107,10 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
           <TabsContent value="audit" className="mt-0">
             <AuditTab audits={audits} pendingTrades={pendingTrades} latestTeamBrief={summary?.latest_analysis?.team_brief} />
+          </TabsContent>
+
+          <TabsContent value="trail" className="mt-0">
+            <DecisionTrailTab analyses={analyses} />
           </TabsContent>
 
           <TabsContent value="strategy" className="mt-0">

@@ -76,11 +76,11 @@ Respond with JSON only — no prose outside the JSON:
     "SYMBOL.NS": {
       "outlook": "bullish",
       "conviction": "high",
-      "keyReason": "single most important factor in 10 words or less",
-      "conflicts": ["e.g. RSI 75 overbought vs analyst strong-buy"]
+      "keyReason": "single most important factor in 15-20 words — include a specific number or data point",
+      "conflicts": ["Each conflict: which two agents disagree, what each says, and how Foxtrot should weigh them"]
     }
   },
-  "macroContext": "2-3 sentences: global backdrop and key macro tailwinds/risks for Indian equities today",
+  "macroContext": "3-4 sentences: global backdrop, key macro tailwinds and risks for Indian equities today. Mention FII/DII flows if known from Alpha data, commodity impact on relevant sectors, and any central bank or currency development.",
   "topOpportunities": ["SYMBOL.NS: one-line thesis"],
   "topRisks": ["risk description"]
 }
@@ -91,7 +91,7 @@ Limit topOpportunities and topRisks to 3 items each.`
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = msg.content[0].type === 'text' ? msg.content[0].text : ''

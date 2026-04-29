@@ -41,10 +41,10 @@ Analyse this for an Indian equity portfolio. Identify:
 Respond with JSON only — no prose outside the JSON:
 {
   "perSymbol": {
-    "SYMBOL.NS": { "signal": "bullish", "reason": "one sentence" }
+    "SYMBOL.NS": { "signal": "bullish", "reason": "2-3 sentences. Include the specific headline or data point driving the signal. Mention any sector-level tailwind or risk that applies." }
   },
-  "geopoliticalRisks": ["risk 1", "risk 2"],
-  "macroThemes": ["theme 1", "theme 2"],
+  "geopoliticalRisks": ["Each item 1-2 sentences: what happened and why it matters for Indian equities"],
+  "macroThemes": ["Each item 1-2 sentences: the theme and its directional impact on Indian markets"],
   "overallSentiment": "bullish"
 }
 Valid signal values: "bullish", "bearish", "neutral"
@@ -53,7 +53,7 @@ Valid overallSentiment values: "bullish", "bearish", "neutral"`
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1200,
+      max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = msg.content[0].type === 'text' ? msg.content[0].text : ''

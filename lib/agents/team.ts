@@ -5,7 +5,7 @@ import { runBravo } from './bravo'
 import { runCharlie } from './charlie'
 import { runDelta } from './delta'
 import { runEcho } from './echo'
-import type { AlphaReport, EchoReport } from './types'
+import type { AlphaReport, EchoReport, AgentReports } from './types'
 
 function buildTeamContext(echo: EchoReport, alpha: AlphaReport): string {
   const lines = [
@@ -82,5 +82,12 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
   // Phase 3: Foxtrot (Portfolio Manager) decides with full intelligence context injected
   const teamContext = buildTeamContext(echoReport, alphaReport)
   const result = await runDailyAnalysis({ ...input, teamContext })
-  return { ...result, team_brief: teamContext }
+  const agent_reports: AgentReports = {
+    alpha: alphaReport,
+    bravo: bravoReport,
+    charlie: charlieReport,
+    delta: deltaReport,
+    echo: echoReport,
+  }
+  return { ...result, team_brief: teamContext, agent_reports }
 }

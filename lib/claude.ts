@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 import type { QuoteResult } from '@/lib/yahoo'
+import type { AgentReports } from '@/lib/agents/types'
 
 export type { QuoteResult }
 
@@ -65,6 +66,8 @@ export interface AgentOutput {
   }
   /** Set by runTradingTeam — Echo's intelligence brief passed to Foxtrot */
   team_brief?: string
+  /** Set by runTradingTeam — all five specialist reports for the Decision Trail UI */
+  agent_reports?: AgentReports
 }
 
 export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> {

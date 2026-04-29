@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase'
 import { getCurrentPrices } from '@/lib/yahoo'
 import { enrichHoldings, calcTotalValue, calcSectorAllocation } from '@/lib/trading'
-import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile, PendingTrade } from '@/types'
+import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile, PendingTrade, DailyAnalysis } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinanceClass = require('yahoo-finance2').default
@@ -130,6 +130,16 @@ export async function getTraderProfiles(): Promise<TraderProfile[]> {
     .from('trader_profile')
     .select('*')
     .order('version', { ascending: false })
+  return data ?? []
+}
+
+export async function getAnalyses(): Promise<DailyAnalysis[]> {
+  const supabase = getSupabase()
+  const { data } = await supabase
+    .from('daily_analyses')
+    .select('*')
+    .order('date', { ascending: false })
+    .limit(30)
   return data ?? []
 }
 
