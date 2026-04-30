@@ -45,6 +45,8 @@ export interface AgentInput {
   recent_trades: Trade[]
   past_analyses: DailyAnalysis[]
   today_date: string
+  execution_date: string
+  observe_only: boolean
   traderProfile?: string
   /** Injected by the trading team orchestrator (team.ts) before calling Foxtrot */
   teamContext?: string
@@ -101,7 +103,15 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
         `  [${a.date}] ${a.journal.slice(0, 200)}...`
       ).join('\n')
 
-  const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}Today is ${input.today_date}. Here is my current situation:
+  const executionNote = input.observe_only
+    ? `NOTE: The next market open is ${input.execution_date} — do NOT make any trade decisions today. Set all decisions to HOLD. Write your journal and market observations only.`
+    : input.execution_date !== new Date(new Date(input.today_date).getTime() + 86400000).toISOString().split('T')[0]
+      ? `NOTE: Next trading day is ${input.execution_date} — trades will execute then, not tomorrow. Factor in this longer gap when sizing and timing decisions.`
+      : `Trades will execute at tomorrow's (${input.execution_date}) market open.`
+
+  const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}Today is ${input.today_date}. ${executionNote}
+
+Here is my current situation:
 
 PORTFOLIO
   Cash available: ₹${input.portfolio_cash.toFixed(2)}
@@ -120,7 +130,7 @@ ${recentTradesSummary}
 MY PAST JOURNAL ENTRIES
 ${pastJournals}
 
-Based on this, decide what to do tomorrow morning. Respond with JSON matching this exact schema:
+Based on this, decide what to do. Respond with JSON matching this exact schema:
 {
   "journal": "Your honest, detailed market commentary — what you saw today, your thesis, what you're thinking",
   "market_summary": "One sentence: overall market mood today",

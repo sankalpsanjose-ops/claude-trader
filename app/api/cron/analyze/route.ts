@@ -4,6 +4,7 @@ import { getQuotes, DEFAULT_WATCHLIST } from '@/lib/yahoo'
 import { runDailyAnalysis, loadTraderProfileFromFile } from '@/lib/claude'
 import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
+import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 
 export const maxDuration = 300
@@ -38,6 +39,8 @@ export async function GET(req: NextRequest) {
   }
 
   const today = new Date().toISOString().split('T')[0]
+  const observeOnly = !isTomorrowTradingDay(today)
+  const executionDate = getNextTradingDay(today)
 
   const [portfolioRes, holdingsRes, tradesRes, analysesRes, traderProfile] = await Promise.all([
     supabaseAdmin.from('portfolio').select('*').single(),
@@ -85,6 +88,8 @@ export async function GET(req: NextRequest) {
     recent_trades: recentTrades,
     past_analyses: pastAnalyses,
     today_date: today,
+    execution_date: executionDate,
+    observe_only: observeOnly,
     traderProfile,
   }
 
@@ -139,7 +144,7 @@ export async function GET(req: NextRequest) {
     ] : []),
   ])
 
-  const tradesToQueue = valid.filter(d => d.action !== 'HOLD' && d.quantity)
+  const tradesToQueue = observeOnly ? [] : valid.filter(d => d.action !== 'HOLD' && d.quantity)
   if (tradesToQueue.length > 0) {
     await supabaseAdmin.from('pending_trades').delete().neq('id', '00000000-0000-0000-0000-000000000000')
     const quoteMap = Object.fromEntries(quotes.map(q => [q.symbol, q]))
@@ -158,6 +163,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     date: today,
+    observe_only: observeOnly,
+    execution_date: executionDate,
+    trades_queued: tradesToQueue.length,
     decisions_raw: analysis.decisions.length,
     decisions_valid: valid.length,
     decisions_rejected: rejected.map(r => ({ symbol: r.decision.symbol, reason: r.reason })),

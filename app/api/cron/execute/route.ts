@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getOpenPrices } from '@/lib/yahoo'
 import { MIN_CASH_RESERVE } from '@/lib/trading'
+import { isTradingDay } from '@/lib/market-calendar'
 import type { PendingTrade } from '@/types'
 
 export const maxDuration = 120
@@ -10,6 +11,11 @@ export async function GET(req: NextRequest) {
   const secret = req.headers.get('authorization')?.replace('Bearer ', '')
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const today = new Date().toISOString().split('T')[0]
+  if (!isTradingDay(today)) {
+    return NextResponse.json({ ok: true, skipped: true, reason: 'Market closed today — pending trades preserved' })
   }
 
   // Fetch pending trades and current portfolio
@@ -33,7 +39,6 @@ export async function GET(req: NextRequest) {
 
   let cash = portfolio.cash
   const executed: string[] = []
-  const today = new Date().toISOString().split('T')[0]
 
   for (const trade of pending) {
     const price = openPrices[trade.symbol]
