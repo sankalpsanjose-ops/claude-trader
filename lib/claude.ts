@@ -45,6 +45,7 @@ export interface AgentInput {
   recent_trades: Trade[]
   past_analyses: DailyAnalysis[]
   today_date: string
+  today_is_trading_day: boolean
   execution_date: string
   observe_only: boolean
   traderProfile?: string
@@ -103,11 +104,13 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
         `  [${a.date}] ${a.journal.slice(0, 200)}...`
       ).join('\n')
 
+  const priceNote = input.today_is_trading_day
+    ? `Today's prices reflect today's market close.`
+    : `NSE/BSE prices shown are from the last trading day — markets are closed today.`
+
   const executionNote = input.observe_only
-    ? `NOTE: The next market open is ${input.execution_date} — do NOT make any trade decisions today. Set all decisions to HOLD. Write your journal and market observations only.`
-    : input.execution_date !== new Date(new Date(input.today_date).getTime() + 86400000).toISOString().split('T')[0]
-      ? `NOTE: Next trading day is ${input.execution_date} — trades will execute then, not tomorrow. Factor in this longer gap when sizing and timing decisions.`
-      : `Trades will execute at tomorrow's (${input.execution_date}) market open.`
+    ? `${priceNote} Next market open is ${input.execution_date}. Do NOT queue any trades today — write your journal and market observations only. Set all decisions to HOLD.`
+    : `${priceNote} Trades will execute at tomorrow's (${input.execution_date}) market open.`
 
   const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}Today is ${input.today_date}. ${executionNote}
 

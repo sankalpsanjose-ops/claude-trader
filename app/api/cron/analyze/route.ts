@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
   }
 
   const today = new Date().toISOString().split('T')[0]
+  const todayIsTrading = isTradingDay(today)
   const observeOnly = !isTomorrowTradingDay(today)
   const executionDate = getNextTradingDay(today)
 
@@ -88,6 +89,7 @@ export async function GET(req: NextRequest) {
     recent_trades: recentTrades,
     past_analyses: pastAnalyses,
     today_date: today,
+    today_is_trading_day: todayIsTrading,
     execution_date: executionDate,
     observe_only: observeOnly,
     traderProfile,
