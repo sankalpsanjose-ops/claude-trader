@@ -55,6 +55,7 @@ async function Dashboard() {
       profileVersion={activeProfileVersion}
       usingTradingTeam={process.env.USE_TRADING_TEAM === 'true'}
       liveStartDate={process.env.LIVE_START_DATE}
+      startingCapital={parseInt(process.env.STARTING_CAPITAL ?? '500000', 10)}
     />
   )
 }

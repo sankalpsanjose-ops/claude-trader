@@ -45,7 +45,9 @@ export async function GET(req: NextRequest) {
     if (!price) continue
 
     if (trade.action === 'BUY') {
-      const cost = price * trade.quantity
+      const tradeValue = price * trade.quantity
+      const stt = Math.round(tradeValue * 0.001 * 100) / 100 // STT 0.1% on buy
+      const cost = tradeValue + stt
       if (cash - cost < MIN_CASH_RESERVE) continue // enforce cash floor
 
       cash -= cost
@@ -84,7 +86,7 @@ export async function GET(req: NextRequest) {
         realised_pnl: null,
         rationale: trade.rationale,
       })
-      executed.push(`BUY ${trade.quantity}x ${trade.symbol} @ ₹${price}`)
+      executed.push(`BUY ${trade.quantity}x ${trade.symbol} @ ₹${price} (fees ₹${stt.toFixed(2)})`)
     }
 
     if (trade.action === 'SELL') {
@@ -92,8 +94,11 @@ export async function GET(req: NextRequest) {
       if (!existing) continue
 
       const qty = Math.min(trade.quantity, existing.quantity)
-      const proceeds = price * qty
-      const realisedPnl = (price - existing.buy_price) * qty
+      const tradeValue = price * qty
+      const stt = Math.round(tradeValue * 0.001 * 100) / 100 // STT 0.1% on sell
+      const dp = 15.34 // DP charge per scrip on delivery sell
+      const proceeds = tradeValue - stt - dp
+      const realisedPnl = (price - existing.buy_price) * qty - stt - dp
       cash += proceeds
 
       if (existing.quantity - qty <= 0) {
@@ -117,7 +122,7 @@ export async function GET(req: NextRequest) {
         realised_pnl: realisedPnl,
         rationale: trade.rationale,
       })
-      executed.push(`SELL ${qty}x ${trade.symbol} @ ₹${price}`)
+      executed.push(`SELL ${qty}x ${trade.symbol} @ ₹${price} (fees ₹${(stt + dp).toFixed(2)})`)
     }
   }
 

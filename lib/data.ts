@@ -1,6 +1,6 @@
 import { getSupabase } from '@/lib/supabase'
 import { getCurrentPrices } from '@/lib/yahoo'
-import { enrichHoldings, calcTotalValue, calcSectorAllocation } from '@/lib/trading'
+import { enrichHoldings, calcTotalValue, calcSectorAllocation, STARTING_CAPITAL } from '@/lib/trading'
 import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile, PendingTrade, DailyAnalysis } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -43,13 +43,13 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
     holdings.length > 0
       ? getCurrentPrices(holdings.map((h: { symbol: string }) => h.symbol))
       : Promise.resolve({}),
-    fetchBenchmark(portfolio.inception_date, 50000),
+    fetchBenchmark(portfolio.inception_date, STARTING_CAPITAL),
   ])
 
   const enriched = enrichHoldings(holdings, livePrices)
   const totalValue = calcTotalValue(portfolio, enriched)
-  const totalPnl = totalValue - 50000
-  const totalPnlPct = (totalPnl / 50000) * 100
+  const totalPnl = totalValue - STARTING_CAPITAL
+  const totalPnlPct = (totalPnl / STARTING_CAPITAL) * 100
 
   // Days since inception
   const inception = new Date(portfolio.inception_date)

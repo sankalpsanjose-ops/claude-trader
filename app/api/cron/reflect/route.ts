@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
+import { STARTING_CAPITAL } from '@/lib/trading'
 
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
 
   const portfolioRes = await supabaseAdmin.from('portfolio').select('cash, total_value').single()
   const portfolio = portfolioRes.data
-  const totalReturn = portfolio ? ((portfolio.total_value - 50000) / 50000 * 100).toFixed(2) : 'unknown'
+  const totalReturn = portfolio ? ((portfolio.total_value - STARTING_CAPITAL) / STARTING_CAPITAL * 100).toFixed(2) : 'unknown'
 
   const prompt = `You are reviewing the past month of trading activity for an autonomous Claude trader.
 

@@ -5,6 +5,7 @@ import { runDailyAnalysis, loadTraderProfileFromFile } from '@/lib/claude'
 import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
+import { STARTING_CAPITAL } from '@/lib/trading'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 
 export const maxDuration = 300
@@ -76,8 +77,8 @@ export async function GET(req: NextRequest) {
     return sum + (priceMap[h.symbol] ?? h.current_price) * h.quantity
   }, 0)
   const totalValue = portfolio.cash + marketValue
-  const totalPnl = totalValue - 50000
-  const totalPnlPct = (totalPnl / 50000) * 100
+  const totalPnl = totalValue - STARTING_CAPITAL
+  const totalPnlPct = (totalPnl / STARTING_CAPITAL) * 100
 
   const agentInput = {
     portfolio_cash: portfolio.cash,

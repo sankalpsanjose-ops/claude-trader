@@ -15,9 +15,10 @@ function fmtSigned(n: number) {
 interface Props {
   data: PortfolioSummary
   liveStartDate?: string
+  startingCapital: number
 }
 
-export function SummaryTab({ data, liveStartDate }: Props) {
+export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
   const { portfolio, total_pnl, total_pnl_pct, annualised_return, days_running, today_pnl, open_positions } = data
 
   return (
@@ -27,7 +28,7 @@ export function SummaryTab({ data, liveStartDate }: Props) {
         <StatCard
           label="Portfolio Value"
           value={fmtINR(portfolio.total_value)}
-          sub={`Started ${fmtINR(50000)} · Day ${days_running}`}
+          sub={`Started ${fmtINR(startingCapital)} · Day ${days_running}`}
         />
         <StatCard
           label="Total P&L"
@@ -71,10 +72,10 @@ export function SummaryTab({ data, liveStartDate }: Props) {
               vs Nifty 50
             </div>
             <div className="text-xs text-[#8b949e]">
-              Base <span className="text-[#e6edf3]">{fmtINR(50000)}</span>
+              Base <span className="text-[#e6edf3]">{fmtINR(startingCapital)}</span>
             </div>
           </div>
-          <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} liveStartDate={liveStartDate} />
+          <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} liveStartDate={liveStartDate} startingCapital={startingCapital} />
         </div>
       </div>
 

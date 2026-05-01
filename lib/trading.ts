@@ -1,8 +1,8 @@
 import type { Holding, HoldingWithLive, Portfolio, SectorAllocation } from '@/types'
 import { SECTOR_MAP } from '@/types'
 
-export const STARTING_CAPITAL = 50000
-export const MIN_CASH_RESERVE = 5000
+export const STARTING_CAPITAL = parseInt(process.env.STARTING_CAPITAL ?? '500000', 10)
+export const MIN_CASH_RESERVE = Math.round(STARTING_CAPITAL * 0.10)
 export const MAX_POSITION_PCT = 0.20
 
 export function enrichHoldings(

@@ -7,6 +7,7 @@ interface Props {
   data: PerformancePoint[]
   benchmark?: PerformancePoint[]
   liveStartDate?: string
+  startingCapital: number
 }
 
 function formatDate(dateStr: string) {
@@ -18,7 +19,7 @@ function formatINR(value: number) {
   return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function PerformanceChart({ data, benchmark = [], liveStartDate }: Props) {
+export function PerformanceChart({ data, benchmark = [], liveStartDate, startingCapital }: Props) {
   if (data.length < 2) {
     return (
       <div className="flex items-center justify-center h-24 text-sm text-[#6e7681]">
@@ -44,11 +45,11 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate }: Props)
     : null
 
   const lastValue = data[data.length - 1].value
-  const isUp = lastValue >= 50000
+  const isUp = lastValue >= startingCapital
 
   const lastBenchmark = benchmark.length ? benchmark[benchmark.length - 1].value : null
-  const benchmarkPct = lastBenchmark ? ((lastBenchmark - 50000) / 50000 * 100) : null
-  const claudePct = (lastValue - 50000) / 50000 * 100
+  const benchmarkPct = lastBenchmark ? ((lastBenchmark - startingCapital) / startingCapital * 100) : null
+  const claudePct = (lastValue - startingCapital) / startingCapital * 100
 
   return (
     <div className="space-y-3">
@@ -90,7 +91,7 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate }: Props)
               name === 'claude' ? 'Claude' : 'Nifty 50',
             ]}
           />
-          <ReferenceLine y={50000} stroke="#484f58" strokeDasharray="4 3" label={{ value: '₹50k', position: 'insideTopRight', fontSize: 10, fill: '#484f58' }} />
+          <ReferenceLine y={startingCapital} stroke="#484f58" strokeDasharray="4 3" label={{ value: `₹${(startingCapital / 100000).toFixed(1)}L`, position: 'insideTopRight', fontSize: 10, fill: '#484f58' }} />
           {liveStartFormatted && (
             <ReferenceLine
               x={liveStartFormatted}

@@ -26,16 +26,17 @@ interface Props {
   profileVersion: number
   usingTradingTeam: boolean
   liveStartDate?: string
+  startingCapital: number
 }
 
 function fmt(n: number) {
   return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfiles, analyses, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate }: Props) {
+export function DashboardClient({ summary, holdings, trades, audits, learnings, pendingTrades, traderProfiles, analyses, traderProfile, profileUpdatedAt, profileVersion, usingTradingTeam, liveStartDate, startingCapital }: Props) {
   const [tab, setTab] = useState('summary')
 
-  const portfolioValue = summary?.portfolio.total_value ?? 50000
+  const portfolioValue = summary?.portfolio.total_value ?? startingCapital
   const totalPnl = summary?.total_pnl ?? 0
   const totalPnlPct = summary?.total_pnl_pct ?? 0
   const lastUpdated = new Date().toLocaleTimeString('en-IN', {
@@ -92,7 +93,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
         <div className="px-4 md:px-6 py-5">
           <TabsContent value="summary" className="mt-0">
             {summary ? (
-              <SummaryTab data={summary} liveStartDate={liveStartDate} />
+              <SummaryTab data={summary} liveStartDate={liveStartDate} startingCapital={startingCapital} />
             ) : (
               <EmptyState message="Portfolio data is loading. Make sure your Supabase and API keys are configured." />
             )}
@@ -126,7 +127,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
       {/* Footer */}
       <div className="px-4 md:px-6 pb-6 text-center text-[11px] text-[#484f58]">
-        Claude Trader · ₹50,000 starting capital · NSE &amp; BSE · No real money involved
+        Claude Trader · ₹{startingCapital.toLocaleString('en-IN')} starting capital · NSE &amp; BSE · No real money involved
       </div>
     </div>
   )

@@ -18,14 +18,17 @@ export function loadTraderProfileFromFile(): string {
 }
 
 function buildSystemPrompt(traderProfile: string): string {
+  const startingCapital = parseInt(process.env.STARTING_CAPITAL ?? '500000', 10)
+  const cashReserve = Math.round(startingCapital * 0.10)
   return `You are an autonomous stock trader operating on NSE and BSE (Indian markets).
 
 RULES (non-negotiable):
-- Starting capital: ₹50,000 INR (paper trading — no real money)
-- Never hold less than ₹5,000 cash
+- Starting capital: ₹${startingCapital.toLocaleString('en-IN')} INR (paper trading — no real money)
+- Never hold less than ₹${cashReserve.toLocaleString('en-IN')} cash (10% of starting capital)
 - Never put more than 20% of total portfolio value in any single stock
 - You can only trade stocks listed on NSE (suffix .NS) or BSE (suffix .BO)
 - Trades queue at end of day, execute at next morning's open price
+- Each trade incurs Zerodha delivery fees: STT 0.1% on buy + STT 0.1% on sell + DP charge ₹15.34 on sell. Factor this into sizing — trades under ₹15,000 are rarely worth the friction.
 
 YOUR GOAL: Maximise portfolio returns over time. Beat a simple buy-and-hold of Nifty 50.
 
