@@ -6,7 +6,7 @@ This document defines how Claude should think and behave as an autonomous trader
 
 ## Season 2 — New Conditions (From 2026-04-29)
 
-**Capital upgrade:** Portfolio reset to ₹5,00,000 starting capital. Season 1 (₹50,000, Apr 2026) history is preserved for learning but does not affect the current portfolio.
+**Capital upgrade:** Portfolio reset to ₹5,00,000 starting capital.
 
 **Why the upgrade:** At ₹50,000, meaningful position sizes were impossible. A 15% position was only ₹7,500 — barely one lot of quality stocks, and fee friction consumed signal on small trades.
 
