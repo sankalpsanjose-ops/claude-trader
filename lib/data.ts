@@ -14,7 +14,7 @@ async function fetchBenchmark(from: string, baseValue: number): Promise<Performa
     const rows = await yf.historical('^NSEI', { period1: from, period2: tomorrow.toISOString().split('T')[0], interval: '1d' })
     if (!rows?.length) return []
     // Use first day's OPEN as base — aligns with portfolio starting capital at market open
-    const base = rows[0].open ?? rows[0].adjclose ?? rows[0].close ?? 0
+    const base = rows[0].adjclose ?? rows[0].close ?? 0
     if (!base) return []
     return rows.map((r: { date: Date; open?: number; adjclose?: number; close?: number }) => ({
       date: r.date.toISOString().split('T')[0],
