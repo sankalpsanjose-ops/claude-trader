@@ -157,7 +157,7 @@ Based on this, decide what to do. Respond with JSON matching this exact schema:
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4000,
+    max_tokens: 8192,
     system: buildSystemPrompt(profile),
     messages: [{ role: 'user', content: userMessage }],
   })
