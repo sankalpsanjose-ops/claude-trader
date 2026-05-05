@@ -30,18 +30,18 @@ async function fetchNiftyData(from: string, baseValue: number): Promise<NiftyDat
     // Find the last close on or before `from` — this is the base price
     const baseRows = rows.filter(r => r.date.toISOString().split('T')[0] <= from)
     if (!baseRows.length) return empty
-    const base = baseRows[baseRows.length - 1].adjclose ?? baseRows[baseRows.length - 1].close ?? 0
-    if (!base) return empty
+    const baseClose = baseRows[baseRows.length - 1].close ?? 0
+    if (!baseClose) return empty
 
     // Build output starting from `from` (inclusive), skipping earlier lookback rows
     const benchmark: PerformancePoint[] = [{ date: from, value: baseValue }]
-    const raw: PerformancePoint[] = [{ date: from, value: base }]
+    const raw: PerformancePoint[] = [{ date: from, value: baseClose }]
 
     for (const r of rows) {
       const date = r.date.toISOString().split('T')[0]
       if (date <= from) continue
-      const close = r.adjclose ?? r.close ?? base
-      benchmark.push({ date, value: (close / base) * baseValue })
+      const close = r.close ?? baseClose
+      benchmark.push({ date, value: (close / baseClose) * baseValue })
       raw.push({ date, value: close })
     }
 

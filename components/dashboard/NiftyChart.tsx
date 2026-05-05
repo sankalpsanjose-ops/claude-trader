@@ -1,6 +1,6 @@
 'use client'
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import type { PerformancePoint } from '@/types'
 
 interface Props {
@@ -21,19 +21,24 @@ export function NiftyChart({ data }: Props) {
     )
   }
 
-  const chartData = data.map(p => ({ date: formatDate(p.date), value: p.value }))
-  const first = data[0].value
-  const last = data[data.length - 1].value
-  const changePct = ((last - first) / first) * 100
-  const isUp = last >= first
+  const base = data[0].value
+  const chartData = data.map(p => ({
+    date: formatDate(p.date),
+    pct: ((p.value - base) / base) * 100,
+    close: p.value,
+  }))
+
+  const lastPct = chartData[chartData.length - 1].pct
+  const isUp = lastPct >= 0
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-[#8b949e]">Current</span>
-        <span className="text-[#e6edf3] font-medium">{last.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+        <span className="text-[#8b949e]">Base</span>
+        <span className="text-[#e6edf3] font-medium">{base.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+        <span className="text-[#8b949e]">on {formatDate(data[0].date)}</span>
         <span className={isUp ? 'text-[#3fb950]' : 'text-[#f85149]'}>
-          {changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}% since {formatDate(data[0].date)}
+          {lastPct >= 0 ? '+' : ''}{lastPct.toFixed(2)}% now
         </span>
       </div>
       <ResponsiveContainer width="100%" height={80}>
@@ -46,17 +51,21 @@ export function NiftyChart({ data }: Props) {
             interval="preserveStartEnd"
           />
           <YAxis hide domain={['auto', 'auto']} />
+          <ReferenceLine y={0} stroke="#484f58" strokeDasharray="4 3" />
           <Tooltip
             contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6, fontSize: 12 }}
             labelStyle={{ color: '#8b949e' }}
-            formatter={(v: unknown) => [
-              (v as number).toLocaleString('en-IN', { maximumFractionDigits: 0 }),
-              'Nifty 50',
-            ]}
+            formatter={(_v: unknown, _name: unknown, props: { payload?: { pct: number; close: number } }) => {
+              const { pct, close } = props.payload ?? { pct: 0, close: 0 }
+              return [
+                `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% (${close.toLocaleString('en-IN', { maximumFractionDigits: 0 })})`,
+                'Nifty 50',
+              ]
+            }}
           />
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="pct"
             stroke="#58a6ff"
             strokeWidth={1.5}
             dot={false}
