@@ -16,10 +16,17 @@ async function fetchBenchmark(from: string, baseValue: number): Promise<Performa
     // Use first day's OPEN as base — aligns with portfolio starting capital at market open
     const base = rows[0].adjclose ?? rows[0].close ?? 0
     if (!base) return []
-    return rows.map((r: { date: Date; open?: number; adjclose?: number; close?: number }) => ({
+    const points = rows.map((r: { date: Date; open?: number; adjclose?: number; close?: number }) => ({
       date: r.date.toISOString().split('T')[0],
       value: ((r.adjclose ?? r.close ?? base) / base) * baseValue,
     }))
+    // On non-trading days the benchmark has no row for today — extend with last known value
+    // so the chart date axis aligns with the portfolio line
+    const todayStr = new Date().toISOString().split('T')[0]
+    if (points.length > 0 && points[points.length - 1].date < todayStr) {
+      points.push({ date: todayStr, value: points[points.length - 1].value })
+    }
+    return points
   } catch {
     return []
   }
