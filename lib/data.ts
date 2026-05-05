@@ -7,28 +7,54 @@ import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformanceP
 const YahooFinanceClass = require('yahoo-finance2').default
 const yf = new YahooFinanceClass({ suppressNotices: ['yahooSurvey', 'ripHistorical'] })
 
-async function fetchBenchmark(from: string, baseValue: number): Promise<PerformancePoint[]> {
+interface NiftyData {
+  benchmark: PerformancePoint[] // scaled to ₹ for comparison chart
+  raw: PerformancePoint[]       // actual Nifty index values in points
+}
+
+async function fetchNiftyData(from: string, baseValue: number): Promise<NiftyData> {
+  const empty = { benchmark: [], raw: [] }
   try {
+    // Fetch from 5 days before `from` to ensure we capture the last trading close before the start date
+    const lookback = new Date(from)
+    lookback.setUTCDate(lookback.getUTCDate() - 5)
     const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const rows = await yf.historical('^NSEI', { period1: from, period2: tomorrow.toISOString().split('T')[0], interval: '1d' })
-    if (!rows?.length) return []
-    // Use first day's OPEN as base — aligns with portfolio starting capital at market open
-    const base = rows[0].adjclose ?? rows[0].close ?? 0
-    if (!base) return []
-    const points = rows.map((r: { date: Date; open?: number; adjclose?: number; close?: number }) => ({
-      date: r.date.toISOString().split('T')[0],
-      value: ((r.adjclose ?? r.close ?? base) / base) * baseValue,
-    }))
-    // On non-trading days the benchmark has no row for today — extend with last known value
-    // so the chart date axis aligns with the portfolio line
-    const todayStr = new Date().toISOString().split('T')[0]
-    if (points.length > 0 && points[points.length - 1].date < todayStr) {
-      points.push({ date: todayStr, value: points[points.length - 1].value })
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+
+    const rows: Array<{ date: Date; adjclose?: number; close?: number }> = await yf.historical(
+      '^NSEI',
+      { period1: lookback.toISOString().split('T')[0], period2: tomorrow.toISOString().split('T')[0], interval: '1d' }
+    )
+    if (!rows?.length) return empty
+
+    // Find the last close on or before `from` — this is the base price
+    const baseRows = rows.filter(r => r.date.toISOString().split('T')[0] <= from)
+    if (!baseRows.length) return empty
+    const base = baseRows[baseRows.length - 1].adjclose ?? baseRows[baseRows.length - 1].close ?? 0
+    if (!base) return empty
+
+    // Build output starting from `from` (inclusive), skipping earlier lookback rows
+    const benchmark: PerformancePoint[] = [{ date: from, value: baseValue }]
+    const raw: PerformancePoint[] = [{ date: from, value: base }]
+
+    for (const r of rows) {
+      const date = r.date.toISOString().split('T')[0]
+      if (date <= from) continue
+      const close = r.adjclose ?? r.close ?? base
+      benchmark.push({ date, value: (close / base) * baseValue })
+      raw.push({ date, value: close })
     }
-    return points
+
+    // On non-trading days extend with last known value so chart aligns with portfolio line
+    const todayStr = new Date().toISOString().split('T')[0]
+    if (benchmark[benchmark.length - 1].date < todayStr) {
+      benchmark.push({ date: todayStr, value: benchmark[benchmark.length - 1].value })
+      raw.push({ date: todayStr, value: raw[raw.length - 1].value })
+    }
+
+    return { benchmark, raw }
   } catch {
-    return []
+    return empty
   }
 }
 
@@ -46,12 +72,13 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
   const portfolio = portfolioRes.data
   const holdings = holdingsRes.data ?? []
 
-  const [livePrices, benchmarkHistory] = await Promise.all([
+  const [livePrices, niftyData] = await Promise.all([
     holdings.length > 0
       ? getCurrentPrices(holdings.map((h: { symbol: string }) => h.symbol))
       : Promise.resolve({}),
-    fetchBenchmark(portfolio.inception_date, STARTING_CAPITAL),
+    fetchNiftyData(portfolio.inception_date, STARTING_CAPITAL),
   ])
+  const { benchmark: benchmarkHistory, raw: niftyRawHistory } = niftyData
 
   const enriched = enrichHoldings(holdings, livePrices)
   const totalValue = calcTotalValue(portfolio, enriched)
@@ -95,6 +122,7 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
     sector_allocation: calcSectorAllocation(enriched, portfolio.cash),
     performance_history: history,
     benchmark_history: benchmarkHistory,
+    nifty_raw_history: niftyRawHistory,
     latest_analysis: analysisRes.data ?? null,
   }
 }

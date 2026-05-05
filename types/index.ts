@@ -83,6 +83,7 @@ export interface PortfolioSummary {
   sector_allocation: SectorAllocation[]
   performance_history: PerformancePoint[]
   benchmark_history: PerformancePoint[]
+  nifty_raw_history: PerformancePoint[]
   latest_analysis: DailyAnalysis | null
 }
 

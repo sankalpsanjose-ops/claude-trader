@@ -1,6 +1,7 @@
 import { StatCard } from './StatCard'
 import { SectorChart } from './SectorChart'
 import { PerformanceChart } from './PerformanceChart'
+import { NiftyChart } from './NiftyChart'
 import { ClaudeJournal } from './ClaudeJournal'
 import type { PortfolioSummary } from '@/types'
 
@@ -78,6 +79,16 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
           <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} liveStartDate={liveStartDate} startingCapital={startingCapital} />
         </div>
       </div>
+
+      {/* Row 3: raw Nifty index chart */}
+      {data.nifty_raw_history.length > 0 && (
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+          <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
+            Nifty 50 Index
+          </div>
+          <NiftyChart data={data.nifty_raw_history} />
+        </div>
+      )}
 
       {/* Claude's journal */}
       {data.latest_analysis && <ClaudeJournal analysis={data.latest_analysis} />}
