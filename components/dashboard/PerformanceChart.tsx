@@ -28,23 +28,26 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate, starting
     )
   }
 
-  // Merge portfolio + benchmark by date
+  // Build chart from union of portfolio + benchmark dates so both lines have full coverage
+  const portfolioMap = new Map(data.map(p => [p.date, p.value]))
   const benchmarkMap = new Map(benchmark.map(p => [p.date, p.value]))
-  const chartData = data.map(p => ({
-    date: formatDate(p.date),
-    claude: p.value,
-    nifty: benchmarkMap.get(p.date) ?? null,
+  const allDates = [...new Set([...data.map(p => p.date), ...benchmark.map(p => p.date)])].sort()
+  const chartData = allDates.map(d => ({
+    date: formatDate(d),
+    rawDate: d,
+    claude: portfolioMap.get(d) ?? null,
+    nifty: benchmarkMap.get(d) ?? null,
   }))
 
   // Find the formatted x-axis label for the first live data point (>= liveStartDate)
   const liveStartFormatted = liveStartDate
     ? (() => {
-        const idx = data.findIndex(p => p.date >= liveStartDate)
+        const idx = allDates.findIndex(d => d >= liveStartDate)
         return idx >= 0 ? chartData[idx].date : null
       })()
     : null
 
-  const lastValue = data[data.length - 1].value
+  const lastValue = data[data.length - 1].value // always use original portfolio data for P&L calc
   const isUp = lastValue >= startingCapital
 
   const lastBenchmark = benchmark.length ? benchmark[benchmark.length - 1].value : null
@@ -107,6 +110,7 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate, starting
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 4, fill: isUp ? '#3fb950' : '#f85149' }}
+            connectNulls
           />
           {benchmark.length > 0 && (
             <Line
