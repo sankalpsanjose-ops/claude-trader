@@ -81,14 +81,15 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
       </div>
 
       {/* Row 3: raw Nifty index chart */}
-      {data.nifty_raw_history.length > 0 && (
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
-          <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
-            Nifty 50 Index
-          </div>
-          <NiftyChart data={data.nifty_raw_history} />
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+        <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
+          Nifty 50 Index
         </div>
-      )}
+        {data.nifty_raw_history.length > 0
+          ? <NiftyChart data={data.nifty_raw_history} />
+          : <div className="flex items-center justify-center h-20 text-sm text-[#6e7681]">Nifty data unavailable — Yahoo Finance may be temporarily down. Refresh to retry.</div>
+        }
+      </div>
 
       {/* Claude's journal */}
       {data.latest_analysis && <ClaudeJournal analysis={data.latest_analysis} />}
