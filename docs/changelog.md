@@ -4,6 +4,19 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-05-07 (continued)
+
+### Hotel → Foxtrot feedback loop
+When Hotel (sanity check) warns, Foxtrot now receives the exact warning notes and gets one revision pass before trades are queued. Foxtrot can revise quantity, strengthen rationale, or drop the trade. Golf and Hotel re-run on the revised decisions. No further retries — whatever comes out of the second pass gets queued regardless.
+
+### Pipeline flow added to Strategy tab
+New "How it works" section in the Strategy tab shows the full 4-phase pipeline visually: Intelligence (Alpha/Bravo/Charlie/Delta in parallel) → Synthesis (Echo) → Decision (Foxtrot) → Validation (Golf → Hotel) → Queue. Includes callout cards explaining the Hotel feedback loop, Golf's hard gates, and solo vs team mode.
+
+### Echo max_tokens raised 3000 → 6000
+Echo receives the combined output of all four specialist agents — 3,000 tokens was too low, causing truncated JSON and silent fallback to "Intelligence synthesis unavailable" on May 5. Now on Sonnet with 6,000 tokens and logs the stop_reason if it still fails.
+
+---
+
 ## 2026-05-07
 
 ### Nifty data made persistent — DB-first architecture

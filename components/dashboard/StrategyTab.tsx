@@ -287,6 +287,102 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         </div>
       </div>
 
+      {/* Pipeline flow */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d]">
+          <div className="font-semibold text-[#e6edf3]">How it works</div>
+          <div className="text-xs text-[#8b949e] mt-0.5">Evening pipeline · runs after market close</div>
+        </div>
+        <div className="p-4 space-y-4">
+
+          {/* Phase row */}
+          <div className="flex flex-wrap items-start gap-2">
+
+            {/* Phase 1 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[10px] uppercase tracking-wider text-[#484f58] font-semibold mb-1">Phase 1 — Intelligence</div>
+              <div className="flex flex-col gap-1">
+                {['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA'].map(c => (
+                  <div key={c} className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded text-center tracking-widest">{c}</div>
+                ))}
+              </div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">run in parallel</div>
+            </div>
+
+            {/* Arrow */}
+            <div className="text-[#484f58] text-lg mt-8 mx-1">→</div>
+
+            {/* Phase 2 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[10px] uppercase tracking-wider text-[#484f58] font-semibold mb-1">Phase 2 — Synthesis</div>
+              <div className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded text-center tracking-widest">ECHO</div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">merges all reports<br/>flags conflicts</div>
+            </div>
+
+            {/* Arrow */}
+            <div className="text-[#484f58] text-lg mt-8 mx-1">→</div>
+
+            {/* Phase 3 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[10px] uppercase tracking-wider text-[#484f58] font-semibold mb-1">Phase 3 — Decision</div>
+              <div className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#2d1a3a] border border-[#6e40c9] px-2.5 py-1 rounded text-center tracking-widest">FOXTROT</div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">buy / sell / hold<br/>writes journal</div>
+            </div>
+
+            {/* Arrow */}
+            <div className="text-[#484f58] text-lg mt-8 mx-1">→</div>
+
+            {/* Phase 4 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[10px] uppercase tracking-wider text-[#484f58] font-semibold mb-1">Phase 4 — Validation</div>
+              <div className="flex flex-col gap-1">
+                <div className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded text-center tracking-widest">GOLF</div>
+                <div className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded text-center tracking-widest">HOTEL</div>
+              </div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">hard rules check<br/>price sanity check</div>
+            </div>
+
+            {/* Arrow */}
+            <div className="text-[#484f58] text-lg mt-8 mx-1">→</div>
+
+            {/* Queue */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[10px] uppercase tracking-wider text-[#484f58] font-semibold mb-1">Output</div>
+              <div className="text-[11px] font-mono font-bold text-[#3fb950] bg-[#1a3a1a] border border-[#3fb95040] px-2.5 py-1 rounded text-center tracking-widest">QUEUE</div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">executed next<br/>market open</div>
+            </div>
+          </div>
+
+          {/* Feedback loop note */}
+          <div className="border border-[#30363d] rounded-md px-3 py-2.5 bg-[#0d1117] flex items-start gap-2.5">
+            <span className="text-[#e3b341] text-[11px] mt-0.5 shrink-0">⟳</span>
+            <p className="text-[11px] text-[#8b949e] leading-relaxed">
+              <span className="text-[#e6edf3] font-semibold">Hotel feedback loop —</span>{' '}
+              If Hotel flags a concern, Foxtrot sees the exact warning and gets one revision pass: revise the quantity, add stronger rationale, or drop the trade. Golf and Hotel then re-check the revised decisions. No further retries.
+            </p>
+          </div>
+
+          {/* Golf hard rules */}
+          <div className="border border-[#30363d] rounded-md px-3 py-2.5 bg-[#0d1117] flex items-start gap-2.5">
+            <span className="text-[#f85149] text-[11px] mt-0.5 shrink-0">✕</span>
+            <p className="text-[11px] text-[#8b949e] leading-relaxed">
+              <span className="text-[#e6edf3] font-semibold">Golf hard gates —</span>{' '}
+              Cash below ₹50,000 · single position above 20% of portfolio · invalid symbol suffix (must be .NS or .BO). Any decision that trips these is silently dropped — it never reaches execution regardless of Foxtrot's reasoning.
+            </p>
+          </div>
+
+          {/* Solo vs team note */}
+          <div className="border border-[#30363d] rounded-md px-3 py-2.5 bg-[#0d1117] flex items-start gap-2.5">
+            <span className="text-[#58a6ff] text-[11px] mt-0.5 shrink-0">ℹ</span>
+            <p className="text-[11px] text-[#8b949e] leading-relaxed">
+              <span className="text-[#e6edf3] font-semibold">Solo mode —</span>{' '}
+              Phases 1 and 2 are skipped. Foxtrot reads raw market data directly and decides alone. Golf and Hotel still run. Faster and cheaper; used when <code className="text-[#79c0ff] bg-[#161b22] px-1 rounded text-[10px] font-mono">USE_TRADING_TEAM</code> is not set.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
       {/* Daily Schedule */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-[#30363d]">
