@@ -168,3 +168,58 @@ Based on this, decide what to do. Respond with JSON matching this exact schema:
 
   return JSON.parse(jsonMatch[0]) as AgentOutput
 }
+
+export async function reviseFoxtrotDecisions(
+  decisions: AgentOutput['decisions'],
+  hotelWarnings: string,
+  traderProfile: string,
+): Promise<AgentOutput['decisions']> {
+  const profile = traderProfile ?? loadTraderProfileFromFile()
+  const decisionsSummary = decisions
+    .filter(d => d.action !== 'HOLD')
+    .map(d => `  ${d.action} ${d.quantity ?? ''}x ${d.symbol} — ${d.rationale}`)
+    .join('\n')
+
+  if (!decisionsSummary) return decisions
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2048,
+    system: buildSystemPrompt(profile),
+    messages: [{
+      role: 'user',
+      content: `You queued these trades, but the Auditor (Hotel) raised concerns before execution:
+
+YOUR DECISIONS:
+${decisionsSummary}
+
+HOTEL'S WARNINGS:
+${hotelWarnings}
+
+Review each flagged decision and either:
+- REVISE: adjust quantity or rationale to address the concern
+- CONFIRM: keep as-is but add a sentence explaining why the concern is outweighed
+- DROP: remove the decision if the concern is valid
+
+Return ONLY the revised decisions array as JSON — no other fields:
+[
+  {
+    "symbol": "SYMBOL.NS",
+    "action": "BUY" | "SELL" | "HOLD",
+    "quantity": <integer>,
+    "rationale": "Updated rationale"
+  }
+]
+Include all original decisions (revised or unchanged). HOLD decisions can be omitted.`,
+    }],
+  })
+
+  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const match = text.match(/\[[\s\S]*\]/)
+  if (!match) return decisions
+  try {
+    return JSON.parse(match[0]) as AgentOutput['decisions']
+  } catch {
+    return decisions
+  }
+}

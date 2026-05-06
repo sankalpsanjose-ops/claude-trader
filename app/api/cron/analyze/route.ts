@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getQuotes, DEFAULT_WATCHLIST } from '@/lib/yahoo'
-import { runDailyAnalysis, loadTraderProfileFromFile } from '@/lib/claude'
+import { runDailyAnalysis, reviseFoxtrotDecisions, loadTraderProfileFromFile } from '@/lib/claude'
 import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
@@ -123,14 +123,28 @@ export async function GET(req: NextRequest) {
     ? await runTradingTeam(agentInput)
     : await runDailyAnalysis(agentInput)
 
-  const { valid, rejected } = validateDecisions(analysis.decisions, {
+  let { valid, rejected } = validateDecisions(analysis.decisions, {
     cash: portfolio.cash,
     total_value: totalValue,
     holdings: holdings.map(h => ({ symbol: h.symbol, quantity: h.quantity, buy_price: h.buy_price })),
     prices: priceMap,
   })
 
-  const sanity = await sanityCheckDecisions(valid, priceMap, analysis.journal)
+  let sanity = await sanityCheckDecisions(valid, priceMap, analysis.journal)
+
+  // If Hotel warns, give Foxtrot one revision pass — no further retries
+  if (!sanity.passed && !observeOnly && valid.some(d => d.action !== 'HOLD')) {
+    const revised = await reviseFoxtrotDecisions(valid, sanity.notes, traderProfile)
+    const reValidated = validateDecisions(revised, {
+      cash: portfolio.cash,
+      total_value: totalValue,
+      holdings: holdings.map(h => ({ symbol: h.symbol, quantity: h.quantity, buy_price: h.buy_price })),
+      prices: priceMap,
+    })
+    valid = reValidated.valid
+    rejected = [...rejected, ...reValidated.rejected]
+    sanity = await sanityCheckDecisions(valid, priceMap, analysis.journal)
+  }
 
   await Promise.all([
     supabaseAdmin.from('daily_analyses').upsert({
