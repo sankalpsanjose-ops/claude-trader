@@ -4,10 +4,34 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-05-07
+
+### Nifty data made persistent — DB-first architecture
+Nifty closes are now stored in `portfolio_snapshots.nifty_close` and used as the primary source for charts. Yahoo Finance is only needed for the anchor close (pre-inception, narrow date range) and today's live close.
+
+Root cause of today's outage: Yahoo Finance returns `close: null` for recent dates when queried over a wide date range, causing the `yahoo-finance2` library to throw a validation error even with `validateResult: false`. The fix: two narrow fetches instead of one wide one, plus DB-first for all past days.
+
+Three-layer fallback for the anchor close:
+1. `portfolio_snapshots.nifty_close` for the inception date row
+2. Narrow Yahoo fetch (Apr 26 → May 1 only — clean historical data)
+3. Hardcoded `NIFTY_ANCHOR_CLOSE` env var (23,997.55)
+
+Past Nifty closes backfilled directly to DB: May 1 (23,997.55), May 4 (24,119.30), May 5 (24,032.80), May 6 (24,330.95).
+
+Requires migration `007_nifty_close.sql`:
+```sql
+ALTER TABLE portfolio_snapshots ADD COLUMN IF NOT EXISTS nifty_close numeric;
+```
+
+### Strategy tab agent model labels corrected
+Delta and Echo were still showing "Haiku" after yesterday's upgrade. Labels and badge colours updated to Sonnet (purple).
+
+---
+
 ## 2026-05-06
 
 ### Agents Delta & Echo upgraded to Sonnet
-Delta (Fundamental Research) and Echo (Synthesis/Supervisor) upgraded from `claude-haiku-4-5` to `claude-sonnet-4-6`. Charlie (News & Sentiment) remains on Haiku as it processes large volumes of text where speed matters more than depth. Alpha, Bravo, and Foxtrot were already on Sonnet.
+Delta (Fundamental Research) and Echo (Synthesis/Supervisor) upgraded from `claude-haiku-4-5` to `claude-sonnet-4-6`. Charlie (News & Sentiment) remains on Haiku — speed over depth for news volume. Alpha, Bravo, and Foxtrot were already on Sonnet.
 
 Full agent model lineup:
 | Agent | Role | Model |
@@ -19,6 +43,28 @@ Full agent model lineup:
 | Echo | Synthesis / Supervisor | claude-sonnet-4-6 |
 | Foxtrot | Portfolio Manager / Decisions | claude-sonnet-4-6 |
 
+### Nifty 50 Index chart — % growth view
+Raw Nifty chart switched from absolute index values to % growth from the Apr 30 anchor (23,997.55). Y-axis shows ±%, tooltip shows both % and absolute value. Reference line at 0%.
+
+### Nifty benchmark data stored in DB
+`portfolio_snapshots.nifty_close` column added (migration `007`). Analysis cron now saves Nifty close alongside each daily portfolio snapshot. Future Yahoo Finance outages will only affect today's data at worst.
+
+---
+
+## 2026-05-05
+
+### Nifty chart alignment fixed
+Both Claude and Nifty lines now start at May 1 on the "vs Nifty 50" comparison chart. Previously Nifty started from Apr 30 (one day early) because the inception date was set to Apr 30. Inception date corrected to May 1; `fetchNiftyData` now uses Apr 30 close as the base and outputs from May 1 onwards.
+
+### Raw Nifty 50 Index chart added
+New full-width chart below the sector + performance row showing Nifty 50 index movement since inception. Separate from the comparison chart.
+
+### Union-of-dates fix for PerformanceChart
+Previously the comparison chart only used portfolio snapshot dates to build the x-axis. On non-trading days (May 1–3) portfolio had snapshots but Nifty had no data, leaving the Nifty line invisible. Fixed by building the x-axis from the union of both date sets.
+
+### Journal truncation fixed
+`max_tokens` in Foxtrot's prompt raised from 4,000 to 8,192. Previously the sanity check notes were being cut off mid-sentence.
+
 ---
 
 ## 2026-05-01
@@ -29,3 +75,4 @@ Season 1 holdings closed, portfolio reset to ₹5,00,000 starting capital. Key c
 - `MIN_CASH_RESERVE` set to 10% (₹50,000)
 - Zerodha delivery fees added: STT 0.1% on buy + sell, DP ₹15.34 per sell
 - Trader profile updated with Season 2 sizing guide and handoff notes from Season 1 learnings
+- Inception date set to 2026-05-01

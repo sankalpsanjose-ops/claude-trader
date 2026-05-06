@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Claude Trader
 
-## Getting Started
+An autonomous AI trading system for Indian equities (NSE/BSE). A six-agent intelligence team analyses markets each evening and queues trades for execution the next morning. All decisions are logged, audited, and reflected on monthly.
 
-First, run the development server:
+**Live dashboard:** https://claude-trader-delta.vercel.app
+
+---
+
+## What it does
+
+1. **Evening analysis** (`/api/cron/analyze`) — six specialist agents file reports, a Portfolio Manager synthesises them into buy/sell/hold decisions, and a Validator + Auditor cross-check everything before trades are queued.
+2. **Morning execution** (`/api/cron/execute`) — queued trades are priced live and executed against the portfolio; Zerodha delivery fees (STT + DP) are deducted.
+3. **Monthly reflection** (`/api/cron/reflect`) — Claude reviews the month's trades, updates the trader profile, and writes a learning entry.
+
+---
+
+## Agent team
+
+| Callsign | Role | Model | Notes |
+|----------|------|-------|-------|
+| Alpha | Global Markets | Pure TS | Fetches S&P 500, FTSE, Nikkei, crude oil, gold, USD/INR |
+| Bravo | Technical Analysis | Pure TS | RSI-14, 20/50-day SMA, 10-day momentum |
+| Charlie | News & Geopolitics | Haiku | Headlines, geopolitical risks, macro themes |
+| Delta | Fundamental Research | Sonnet | P/E, analyst targets, recommendation consensus |
+| Echo | Synthesis / Supervisor | Sonnet | Reconciles all four reports, flags conflicts |
+| Foxtrot | Portfolio Manager | Sonnet | Final buy/sell/hold decisions + daily journal |
+| Golf | Validator | Pure TS | Hard rules: cash floor, position limits, symbol format |
+| Hotel | Auditor | Haiku | Cross-checks decisions against real Yahoo Finance prices |
+
+Alpha and Bravo are pure TypeScript — no LLM call. Golf is also pure TypeScript. Charlie and Hotel use Haiku (speed over depth). Delta, Echo, and Foxtrot use Sonnet.
+
+---
+
+## Tech stack
+
+- **Framework:** Next.js 15 App Router (`force-dynamic` server components)
+- **Database:** Supabase (Postgres via REST API)
+- **Market data:** Yahoo Finance (`yahoo-finance2`)
+- **AI:** Anthropic API (`claude-sonnet-4-6`, `claude-haiku-4-5`)
+- **Hosting:** Vercel (with cron job triggers)
+
+---
+
+## Season 2
+
+Started **1 May 2026** with ₹5,00,000 fresh capital. Season 1 learnings are baked into the trader profile.
+
+- Starting capital: ₹5,00,000
+- Cash floor: ₹50,000 (10%)
+- Min position size: ₹15,000
+- Max single position: 20% of portfolio
+- Fees: STT 0.1% on buy + sell; DP ₹15.34 per scrip on delivery sell
+
+---
+
+## Database tables
+
+| Table | Purpose |
+|-------|---------|
+| `portfolio` | Single-row portfolio state (cash, total value, inception date) |
+| `holdings` | Open positions |
+| `trades` | Executed trade history |
+| `portfolio_snapshots` | Daily EOD portfolio value + Nifty close (used for charts) |
+| `daily_analyses` | Agent journal, decisions, market summary per day |
+| `audits` | Validator + sanity check results per day |
+| `pending_trades` | Trades queued for next morning's execution |
+| `learnings` | Lessons extracted from daily and monthly reflection |
+| `trader_profile` | Versioned trading rules and sizing guide |
+
+---
+
+## Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key |
+| `SUPABASE_URL` | Yes | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Yes | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (cron routes) |
+| `CRON_SECRET` | Yes | Bearer token for cron job authorization |
+| `STARTING_CAPITAL` | Yes | Starting capital in ₹ (e.g. `500000`) |
+| `NIFTY_ANCHOR_DATE` | Yes | Inception date anchor for Nifty chart (e.g. `2026-04-30`) |
+| `NIFTY_ANCHOR_CLOSE` | Yes | Nifty close on anchor date (e.g. `23997.55`) |
+| `USE_TRADING_TEAM` | No | `true` to use 6-agent team; omit for single-agent mode |
+| `LIVE_START_DATE` | No | Date live trading began — draws a reference line on the chart |
+
+---
+
+## Local development
 
 ```bash
+npm install
+# Add all env vars to .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Cron routes can be triggered manually:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Evening analysis
+curl -H "Authorization: Bearer trader-secret-123" http://localhost:3000/api/cron/analyze
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Morning execution
+curl -H "Authorization: Bearer trader-secret-123" http://localhost:3000/api/cron/execute
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Key files
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  page.tsx                  — Dashboard (server component, force-dynamic)
+  api/cron/
+    analyze/route.ts        — Evening analysis + trade queuing
+    execute/route.ts        — Morning trade execution
+    reflect/route.ts        — Monthly reflection
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+lib/
+  agents/                   — Six specialist agents + team orchestrator
+  claude.ts                 — Single-agent analysis + Foxtrot prompts
+  data.ts                   — getSummary(), getHoldings(), Nifty data fetch
+  trading.ts                — STARTING_CAPITAL, fees, enrichHoldings
+  yahoo.ts                  — Price fetching via yahoo-finance2
+  market-calendar.ts        — NSE holiday calendar + trading day utils
+  validator.ts              — Hard trading rule enforcement
 
-## Deploy on Vercel
+docs/
+  trader-profile.md         — Active trading rules (also stored in DB)
+  changelog.md              — Major system changes
+  future-edits.md           — Planned improvements backlog
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+supabase/
+  schema.sql                — Full DB schema
+  migrations/               — Incremental migrations (run manually in Supabase SQL editor)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Nifty benchmark data
+
+Nifty closes are stored in `portfolio_snapshots.nifty_close` each evening when the analysis cron runs. This means chart history is permanently safe in the DB — Yahoo Finance is only needed for the anchor close (pre-inception) and today's live close. If Yahoo fails, past data still renders and today extends with yesterday's value.
