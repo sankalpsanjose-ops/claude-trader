@@ -91,14 +91,18 @@ Limit topOpportunities and topRisks to 3 items each.`
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
+      max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }],
     })
     const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
     const match = text.match(/\{[\s\S]*\}/)
-    if (!match) return FALLBACK
+    if (!match) {
+      console.error('[Echo] No JSON found in response. Stop reason:', msg.stop_reason, '| Preview:', text.slice(0, 200))
+      return FALLBACK
+    }
     return JSON.parse(match[0]) as EchoReport
-  } catch {
+  } catch (e) {
+    console.error('[Echo] Failed:', e instanceof Error ? e.message : e)
     return FALLBACK
   }
 }
