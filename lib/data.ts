@@ -12,42 +12,65 @@ interface NiftyData {
   raw: PerformancePoint[]       // actual Nifty index values in points
 }
 
-async function fetchNiftyData(from: string, baseValue: number): Promise<NiftyData> {
+async function fetchNiftyData(
+  from: string,
+  baseValue: number,
+  snapshots: Array<{ date: string; nifty_close?: number | null }>
+): Promise<NiftyData> {
   const empty = { benchmark: [], raw: [] }
   try {
-    // Fetch from 5 days before `from` to ensure we capture the last trading close before the start date
+    // Fetch from 5 days before `from` to get the anchor close (the last trading close before our start date)
     const lookback = new Date(from)
     lookback.setUTCDate(lookback.getUTCDate() - 5)
     const tomorrow = new Date()
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
 
-    const rows: Array<{ date: Date; adjclose?: number; close?: number }> = await yf.historical(
+    const rows: Array<{ date: Date; close?: number | null }> = await yf.historical(
       '^NSEI',
-      { period1: lookback.toISOString().split('T')[0], period2: tomorrow.toISOString().split('T')[0], interval: '1d' }
+      { period1: lookback.toISOString().split('T')[0], period2: tomorrow.toISOString().split('T')[0], interval: '1d' },
+      { validateResult: false }
     )
-    if (!rows?.length) return empty
 
-    // Find the last close on or before `from` — this is the base price
-    const baseRows = rows.filter(r => r.date.toISOString().split('T')[0] <= from)
-    if (!baseRows.length) return empty
-    const baseClose = baseRows[baseRows.length - 1].close ?? 0
+    // Find anchor: last valid close on or before `from`
+    const anchorRows = (rows ?? []).filter(r => r.close != null && r.date.toISOString().split('T')[0] <= from)
+    if (!anchorRows.length) return empty
+    const baseClose = anchorRows[anchorRows.length - 1].close!
     if (!baseClose) return empty
 
-    // Build output starting from `from` (inclusive), skipping earlier lookback rows
+    // Build history: start with anchor point, then fill from stored DB closes
     const benchmark: PerformancePoint[] = [{ date: from, value: baseValue }]
     const raw: PerformancePoint[] = [{ date: from, value: baseClose }]
 
-    for (const r of rows) {
-      const date = r.date.toISOString().split('T')[0]
-      if (date <= from) continue
-      const close = r.close ?? baseClose
+    // Use stored Nifty closes from snapshots for all days after `from`
+    const storedByDate = new Map(
+      snapshots
+        .filter(s => s.date > from && s.nifty_close != null)
+        .map(s => [s.date, s.nifty_close!])
+    )
+
+    // Also collect any Yahoo rows after `from` that aren't in stored data (fills today if cron hasn't run)
+    const yahooByDate = new Map(
+      (rows ?? [])
+        .filter(r => r.close != null)
+        .map(r => [r.date.toISOString().split('T')[0], r.close!])
+    )
+
+    // Union of all dates after `from`, prefer stored over Yahoo
+    const allDatesAfter = [...new Set([...storedByDate.keys(), ...yahooByDate.keys()])]
+      .filter(d => d > from)
+      .sort()
+
+    for (const date of allDatesAfter) {
+      const close = storedByDate.get(date) ?? yahooByDate.get(date)!
       benchmark.push({ date, value: (close / baseClose) * baseValue })
       raw.push({ date, value: close })
     }
 
+    if (raw.length < 2) return empty
+
     // On non-trading days extend with last known value so chart aligns with portfolio line
     const todayStr = new Date().toISOString().split('T')[0]
-    if (benchmark[benchmark.length - 1].date < todayStr) {
+    if (raw[raw.length - 1].date < todayStr) {
       benchmark.push({ date: todayStr, value: benchmark[benchmark.length - 1].value })
       raw.push({ date: todayStr, value: raw[raw.length - 1].value })
     }
@@ -76,7 +99,7 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
     holdings.length > 0
       ? getCurrentPrices(holdings.map((h: { symbol: string }) => h.symbol))
       : Promise.resolve({}),
-    fetchNiftyData(portfolio.inception_date, STARTING_CAPITAL),
+    fetchNiftyData(portfolio.inception_date, STARTING_CAPITAL, snapshotsRes.data ?? []),
   ])
   const { benchmark: benchmarkHistory, raw: niftyRawHistory } = niftyData
 
@@ -94,7 +117,7 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
   const annualisedReturn = (Math.pow(1 + totalPnlPct / 100, 365 / daysRunning) - 1) * 100
 
   // Today's P&L vs yesterday's snapshot
-  const snapshots = snapshotsRes.data ?? []
+  const snapshots: Array<{ date: string; total_value: number; nifty_close?: number | null }> = snapshotsRes.data ?? []
   const yesterday = snapshots.at(-1)
   const todayPnl = yesterday ? totalValue - yesterday.total_value : 0
 

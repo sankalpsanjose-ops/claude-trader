@@ -10,6 +10,26 @@ import type { Holding, Trade, DailyAnalysis } from '@/types'
 
 export const maxDuration = 300
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const YahooFinanceClass = require('yahoo-finance2').default
+const yf = new YahooFinanceClass({ suppressNotices: ['yahooSurvey', 'ripHistorical'] })
+
+async function fetchNiftyClose(): Promise<number | null> {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const rows: Array<{ date: Date; close?: number | null }> = await yf.historical(
+      '^NSEI',
+      { period1: yesterday, period2: today, interval: '1d' },
+      { validateResult: false }
+    )
+    const valid = rows.filter(r => r.close != null).sort((a, b) => b.date.getTime() - a.date.getTime())
+    return valid[0]?.close ?? null
+  } catch {
+    return null
+  }
+}
+
 async function getActiveProfile(): Promise<string> {
   // Try DB first (updated by monthly reflection), fall back to bundled file
   const { data } = await supabaseAdmin
@@ -70,7 +90,10 @@ export async function GET(req: NextRequest) {
   const savedWatchlist: string[] = (latestAnalysis?.watchlist as string[]) ?? []
   const heldSymbols = holdings.map(h => h.symbol)
   const watchlist = [...new Set([...DEFAULT_WATCHLIST, ...savedWatchlist, ...heldSymbols])]
-  const quotes = await getQuotes(watchlist)
+  const [quotes, niftyClose] = await Promise.all([
+    getQuotes(watchlist),
+    fetchNiftyClose(),
+  ])
   const priceMap = Object.fromEntries(quotes.map(q => [q.symbol, q.price]))
 
   const marketValue = holdings.reduce((sum, h) => {
@@ -136,6 +159,7 @@ export async function GET(req: NextRequest) {
       date: today,
       total_value: totalValue,
       cash: portfolio.cash,
+      ...(niftyClose != null ? { nifty_close: niftyClose } : {}),
     }),
     ...(analysis.learning?.insight ? [
       supabaseAdmin.from('learnings').upsert({
