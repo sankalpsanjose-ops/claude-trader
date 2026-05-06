@@ -12,73 +12,89 @@ interface NiftyData {
   raw: PerformancePoint[]       // actual Nifty index values in points
 }
 
+// Hardcoded anchor as last-resort fallback — Apr 30 2026 NSE close
+const NIFTY_ANCHOR_DATE = process.env.NIFTY_ANCHOR_DATE ?? '2026-04-30'
+const NIFTY_ANCHOR_CLOSE = parseFloat(process.env.NIFTY_ANCHOR_CLOSE ?? '23997.55')
+
 async function fetchNiftyData(
   from: string,
   baseValue: number,
   snapshots: Array<{ date: string; nifty_close?: number | null }>
 ): Promise<NiftyData> {
   const empty = { benchmark: [], raw: [] }
-  try {
-    // Fetch from 5 days before `from` to get the anchor close (the last trading close before our start date)
-    const lookback = new Date(from)
-    lookback.setUTCDate(lookback.getUTCDate() - 5)
-    const tomorrow = new Date()
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
 
-    const rows: Array<{ date: Date; close?: number | null }> = await yf.historical(
-      '^NSEI',
-      { period1: lookback.toISOString().split('T')[0], period2: tomorrow.toISOString().split('T')[0], interval: '1d' },
-      { validateResult: false }
-    )
+  // --- Step 1: anchor close (last trading close before `from`) ---
+  // Primary: DB snapshot for `from` date stores the anchor close
+  // Fallback 1: narrow Yahoo fetch (Apr 26 → from, avoids recent null-close rows)
+  // Fallback 2: hardcoded constant
+  let baseClose: number = snapshots.find(s => s.date === from)?.nifty_close ?? 0
 
-    // Find anchor: last valid close on or before `from`
-    const anchorRows = (rows ?? []).filter(r => r.close != null && r.date.toISOString().split('T')[0] <= from)
-    if (!anchorRows.length) return empty
-    const baseClose = anchorRows[anchorRows.length - 1].close!
-    if (!baseClose) return empty
-
-    // Build history: start with anchor point, then fill from stored DB closes
-    const benchmark: PerformancePoint[] = [{ date: from, value: baseValue }]
-    const raw: PerformancePoint[] = [{ date: from, value: baseClose }]
-
-    // Use stored Nifty closes from snapshots for all days after `from`
-    const storedByDate = new Map(
-      snapshots
-        .filter(s => s.date > from && s.nifty_close != null)
-        .map(s => [s.date, s.nifty_close!])
-    )
-
-    // Also collect any Yahoo rows after `from` that aren't in stored data (fills today if cron hasn't run)
-    const yahooByDate = new Map(
-      (rows ?? [])
-        .filter(r => r.close != null)
-        .map(r => [r.date.toISOString().split('T')[0], r.close!])
-    )
-
-    // Union of all dates after `from`, prefer stored over Yahoo
-    const allDatesAfter = [...new Set([...storedByDate.keys(), ...yahooByDate.keys()])]
-      .filter(d => d > from)
-      .sort()
-
-    for (const date of allDatesAfter) {
-      const close = storedByDate.get(date) ?? yahooByDate.get(date)!
-      benchmark.push({ date, value: (close / baseClose) * baseValue })
-      raw.push({ date, value: close })
-    }
-
-    if (raw.length < 2) return empty
-
-    // On non-trading days extend with last known value so chart aligns with portfolio line
-    const todayStr = new Date().toISOString().split('T')[0]
-    if (raw[raw.length - 1].date < todayStr) {
-      benchmark.push({ date: todayStr, value: benchmark[benchmark.length - 1].value })
-      raw.push({ date: todayStr, value: raw[raw.length - 1].value })
-    }
-
-    return { benchmark, raw }
-  } catch {
-    return empty
+  if (!baseClose) {
+    try {
+      const lookback = new Date(from)
+      lookback.setUTCDate(lookback.getUTCDate() - 5)
+      const anchorRows: Array<{ date: Date; close?: number | null }> = await yf.historical(
+        '^NSEI',
+        { period1: lookback.toISOString().split('T')[0], period2: from, interval: '1d' },
+        { validateResult: false }
+      )
+      const valid = (anchorRows ?? []).filter(r => r.close != null)
+      baseClose = valid[valid.length - 1]?.close ?? 0
+    } catch { /* fall through to hardcoded */ }
   }
+
+  if (!baseClose) {
+    // Last resort: use hardcoded anchor only if inception date matches
+    if (from <= NIFTY_ANCHOR_DATE || NIFTY_ANCHOR_DATE <= from) baseClose = NIFTY_ANCHOR_CLOSE
+  }
+
+  if (!baseClose) return empty
+
+  // --- Step 2: build history from DB snapshots (trading days after `from`) ---
+  const storedByDate = new Map(
+    snapshots
+      .filter(s => s.date > from && s.nifty_close != null)
+      .map(s => [s.date, s.nifty_close!])
+  )
+
+  // --- Step 3: today's close — narrow Yahoo fetch if not yet in DB ---
+  const todayStr = new Date().toISOString().split('T')[0]
+  if (!storedByDate.has(todayStr)) {
+    try {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+      const recentRows: Array<{ date: Date; close?: number | null }> = await yf.historical(
+        '^NSEI',
+        { period1: yesterday, period2: tomorrow, interval: '1d' },
+        { validateResult: false }
+      )
+      for (const r of recentRows ?? []) {
+        if (r.close != null) {
+          const d = r.date.toISOString().split('T')[0]
+          if (d > from) storedByDate.set(d, r.close)
+        }
+      }
+    } catch { /* extend with last known value below */ }
+  }
+
+  // --- Build output arrays ---
+  const benchmark: PerformancePoint[] = [{ date: from, value: baseValue }]
+  const raw: PerformancePoint[] = [{ date: from, value: baseClose }]
+
+  for (const [date, close] of [...storedByDate.entries()].sort()) {
+    benchmark.push({ date, value: (close / baseClose) * baseValue })
+    raw.push({ date, value: close })
+  }
+
+  if (raw.length < 2) return empty
+
+  // On non-trading days extend with last known value so chart aligns with portfolio line
+  if (raw[raw.length - 1].date < todayStr) {
+    benchmark.push({ date: todayStr, value: benchmark[benchmark.length - 1].value })
+    raw.push({ date: todayStr, value: raw[raw.length - 1].value })
+  }
+
+  return { benchmark, raw }
 }
 
 export async function getSummary(): Promise<PortfolioSummary | null> {
