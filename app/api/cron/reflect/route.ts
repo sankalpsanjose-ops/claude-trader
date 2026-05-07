@@ -20,17 +20,19 @@ export async function GET(req: NextRequest) {
   const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
 
   // Fetch last 30 days of data
-  const [learningsRes, tradesRes, analysesRes, profileRes] = await Promise.all([
+  const [learningsRes, tradesRes, analysesRes, profileRes, auditsRes] = await Promise.all([
     supabaseAdmin.from('learnings').select('*').gte('date', fromDate).order('date'),
     supabaseAdmin.from('trades').select('*').gte('executed_at', fromDate).order('executed_at'),
     supabaseAdmin.from('daily_analyses').select('date, journal, market_summary').gte('date', fromDate).order('date'),
     supabaseAdmin.from('trader_profile').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabaseAdmin.from('audits').select('date, sanity_passed, sanity_notes, rejections').gte('date', fromDate).eq('sanity_passed', false).order('date'),
   ])
 
   const learnings = learningsRes.data ?? []
   const trades = tradesRes.data ?? []
   const analyses = analysesRes.data ?? []
   const currentProfile = profileRes.data
+  const auditWarnings = auditsRes.data ?? []
 
   if (!currentProfile) {
     return NextResponse.json({ error: 'No active trader profile found' }, { status: 500 })
@@ -51,6 +53,16 @@ export async function GET(req: NextRequest) {
     ? 'No journal entries this month.'
     : analyses.map(a => `  [${a.date}] ${a.journal.slice(0, 150)}...`).join('\n')
 
+  const auditWarningLines = auditWarnings.length === 0
+    ? 'No audit warnings this month — all sanity checks passed.'
+    : auditWarnings.map(a => {
+        const rejections = (a.rejections as Array<{ symbol: string; action: string; reason: string }> ?? [])
+        const rejLine = rejections.length > 0
+          ? ` | Golf rejected: ${rejections.map(r => `${r.action} ${r.symbol} (${r.reason})`).join(', ')}`
+          : ''
+        return `  [${a.date}] ${a.sanity_notes}${rejLine}`
+      }).join('\n\n')
+
   const portfolioRes = await supabaseAdmin.from('portfolio').select('cash, total_value').single()
   const portfolio = portfolioRes.data
   const totalReturn = portfolio ? ((portfolio.total_value - STARTING_CAPITAL) / STARTING_CAPITAL * 100).toFixed(2) : 'unknown'
@@ -67,6 +79,9 @@ ${tradeLines}
 
 JOURNAL EXCERPTS (last 30 days):
 ${journalLines}
+
+HOTEL AUDIT WARNINGS (days where sanity check failed — external perspective on reasoning quality):
+${auditWarningLines}
 
 CURRENT TRADER PROFILE (v${currentProfile.version}):
 ${currentProfile.content.slice(0, 2000)}...
@@ -86,7 +101,7 @@ Respond with JSON only:
 
   const res = await ai.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4000,
+    max_tokens: 6000,
     messages: [{ role: 'user', content: prompt }],
   })
 
