@@ -10,6 +10,7 @@ import { AuditTab } from './AuditTab'
 import { StrategyTab } from './StrategyTab'
 import { ChangelogTab } from './ChangelogTab'
 import { DecisionTrailTab } from './DecisionTrailTab'
+import { AskTab } from './AskTab'
 import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade, TraderProfile, DailyAnalysis } from '@/types'
 
 interface Props {
@@ -78,7 +79,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6">
           <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
-            {(['summary', 'holdings', 'trades', 'audit', 'trail', 'strategy', 'changelog'] as const).map(t => (
+            {(['summary', 'holdings', 'trades', 'audit', 'trail', 'strategy', 'changelog', 'ask'] as const).map(t => (
               <TabsTrigger
                 key={t}
                 value={t}
@@ -121,6 +122,10 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
           <TabsContent value="changelog" className="mt-0">
             <ChangelogTab profiles={traderProfiles} />
+          </TabsContent>
+
+          <TabsContent value="ask" className="mt-0">
+            <AskTab />
           </TabsContent>
         </div>
       </Tabs>

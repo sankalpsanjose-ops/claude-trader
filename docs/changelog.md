@@ -6,6 +6,20 @@ Major changes to the trading system, newest first.
 
 ## 2026-05-07 (continued)
 
+### Ask KingPin — RAG chat feature
+New "Ask" tab on the dashboard lets viewers chat directly with KingPin about its trades, holdings, strategy, and reasoning. Architecture:
+- `/api/chat` (POST) — two-tier LLM pipeline: Haiku topic gate first (blocks off-topic questions cheaply), then Sonnet answers grounded in live DB context.
+- RAG context: 6 parallel DB queries (portfolio, holdings, last 10 trades, last 5 journals, last 5 learnings, trader profile excerpt) assembled into a structured snapshot passed to Sonnet.
+- IP rate limit: 10 questions per IP per hour, tracked in new `ask_rate_limits` table. IPs stored as SHA-256 hashes. Stale rows cleaned up inline on each request.
+- KingPin persona: strict rules — only speaks from data provided, never gives investment advice, never fabricates figures.
+- `components/dashboard/AskTab.tsx`: self-contained client component, no props. Chat bubbles, animated loading dots, dismissible error bar, 500-char input limit with amber/red counter.
+
+Requires migration `008_ask_rate_limits.sql`:
+```sql
+CREATE TABLE IF NOT EXISTS ask_rate_limits (ip_hash text, asked_at timestamptz DEFAULT now());
+CREATE INDEX IF NOT EXISTS ask_rate_limits_ip_hash_asked_at_idx ON ask_rate_limits (ip_hash, asked_at);
+```
+
 ### Hotel audit warnings fed into monthly reflection
 Monthly reflection (`/api/cron/reflect`) now fetches all WARN days from the `audits` table and passes them as a distinct section — separate from Foxtrot's self-generated learnings. The reflection can now synthesise both perspectives (Foxtrot's own insights + Hotel's external audit flags) when rewriting the trader profile each month. Reflection `max_tokens` raised 4,000 → 6,000 to handle the larger input.
 
