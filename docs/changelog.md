@@ -6,6 +6,9 @@ Major changes to the trading system, newest first.
 
 ## 2026-05-07 (continued)
 
+### Hotel audit warnings fed into monthly reflection
+Monthly reflection (`/api/cron/reflect`) now fetches all WARN days from the `audits` table and passes them as a distinct section — separate from Foxtrot's self-generated learnings. The reflection can now synthesise both perspectives (Foxtrot's own insights + Hotel's external audit flags) when rewriting the trader profile each month. Reflection `max_tokens` raised 4,000 → 6,000 to handle the larger input.
+
 ### Hotel → Foxtrot feedback loop
 When Hotel (sanity check) warns, Foxtrot now receives the exact warning notes and gets one revision pass before trades are queued. Foxtrot can revise quantity, strengthen rationale, or drop the trade. Golf and Hotel re-run on the revised decisions. No further retries — whatever comes out of the second pass gets queued regardless.
 

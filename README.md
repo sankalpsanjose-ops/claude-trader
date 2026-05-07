@@ -8,9 +8,9 @@ An autonomous AI trading system for Indian equities (NSE/BSE). A six-agent intel
 
 ## What it does
 
-1. **Evening analysis** (`/api/cron/analyze`) — six specialist agents file reports, a Portfolio Manager synthesises them into buy/sell/hold decisions, and a Validator + Auditor cross-check everything before trades are queued.
+1. **Evening analysis** (`/api/cron/analyze`) — six specialist agents file reports, a Portfolio Manager synthesises them into buy/sell/hold decisions, and a Validator + Auditor cross-check everything before trades are queued. If the Auditor warns, the Portfolio Manager sees the exact concerns and gets one revision pass before final queuing.
 2. **Morning execution** (`/api/cron/execute`) — queued trades are priced live and executed against the portfolio; Zerodha delivery fees (STT + DP) are deducted.
-3. **Monthly reflection** (`/api/cron/reflect`) — Claude reviews the month's trades, updates the trader profile, and writes a learning entry.
+3. **Monthly reflection** (`/api/cron/reflect`) — Claude reviews the month's trades, learnings, and all Auditor warnings, rewrites the trader profile incorporating lessons from both self-assessment and external audit feedback.
 
 ---
 
@@ -134,6 +134,22 @@ supabase/
   schema.sql                — Full DB schema
   migrations/               — Incremental migrations (run manually in Supabase SQL editor)
 ```
+
+---
+
+## Agent pipeline
+
+```
+Phase 1 (parallel): Alpha + Bravo + Charlie + Delta
+Phase 2:            Echo  — synthesises all four reports, flags conflicts
+Phase 3:            Foxtrot — buy/sell/hold decisions + journal
+Phase 4:            Golf  — hard rule validation (cash floor, position limits, symbol format)
+                    Hotel — price sanity check against live Yahoo Finance data
+                      └─ if WARN → Foxtrot revision pass (one retry only)
+Output:             Queued trades executed next market open
+```
+
+Monthly reflection reads all WARN days from Hotel and incorporates them into the updated trader profile alongside Foxtrot's own daily learnings.
 
 ---
 
