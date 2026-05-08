@@ -33,12 +33,12 @@ export function TradesTab({ trades }: Props) {
             <TableRow className="border-[#30363d] hover:bg-transparent">
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Date</TableHead>
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Stock</TableHead>
-              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Exch</TableHead>
+              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider hidden sm:table-cell">Exch</TableHead>
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Action</TableHead>
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">Qty</TableHead>
-              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">Buy Price</TableHead>
-              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">Sell Price</TableHead>
-              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">Net Proceeds</TableHead>
+              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right hidden sm:table-cell">Buy Price</TableHead>
+              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right hidden sm:table-cell">Sell Price</TableHead>
+              <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right hidden sm:table-cell">Net Proceeds</TableHead>
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-right">P&amp;L</TableHead>
               <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Rationale</TableHead>
             </TableRow>
@@ -61,7 +61,7 @@ export function TradesTab({ trades }: Props) {
                     <div className="font-semibold text-[#e6edf3]">{t.name}</div>
                     <div className="text-[11px] text-[#8b949e] font-mono">{t.symbol}</div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant="outline" className="text-[10px] border-[#30363d] text-[#8b949e]">
                       {t.exchange}
                     </Badge>
@@ -78,12 +78,12 @@ export function TradesTab({ trades }: Props) {
                   <TableCell className="text-right text-[#e6edf3]">{t.quantity}</TableCell>
 
                   {/* Buy price — shown for all rows */}
-                  <TableCell className="text-right font-mono text-[#e6edf3]">
+                  <TableCell className="text-right font-mono text-[#e6edf3] hidden sm:table-cell">
                     {fmt(buyPrice)}
                   </TableCell>
 
                   {/* Sell price — only for SELL rows */}
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono hidden sm:table-cell">
                     {sellPrice != null
                       ? <span className="text-[#f85149]">{fmt(sellPrice)}</span>
                       : <span className="text-[#484f58]">—</span>
@@ -91,7 +91,7 @@ export function TradesTab({ trades }: Props) {
                   </TableCell>
 
                   {/* Net proceeds for SELL, cost for BUY */}
-                  <TableCell className="text-right font-mono text-[#8b949e]">
+                  <TableCell className="text-right font-mono text-[#8b949e] hidden sm:table-cell">
                     {fmt(t.total_value)}
                   </TableCell>
 

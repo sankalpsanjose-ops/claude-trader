@@ -53,12 +53,12 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="rounded-2xl overflow-hidden shadow-[0_2px_16px_rgba(56,189,248,0.18),0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
-            <Image src="/logo.png" alt="Claude Trader" width={200} height={54} className="h-12 w-auto block" priority />
+            <Image src="/logo.png" alt="Claude Trader" width={200} height={54} className="h-9 md:h-12 w-auto block" priority />
           </div>
-          <span className="text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2.5 py-1 rounded-full font-semibold tracking-wide">
+          <span className="hidden sm:inline text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap">
             Paper Trading
           </span>
-          <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide ${
+          <span className={`hidden sm:inline text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap ${
             usingTradingTeam
               ? 'bg-[#1a3a1a] text-[#3fb950]'
               : 'bg-[#21262d] text-[#6e7681]'
@@ -77,8 +77,9 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6">
-          <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
+        <div className="bg-[#161b22] border-b border-[#30363d] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="px-4 md:px-6">
+          <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none flex-nowrap min-w-max">
             {(['summary', 'holdings', 'trades', 'audit', 'trail', 'strategy', 'changelog', 'ask'] as const).map(t => (
               <TabsTrigger
                 key={t}
@@ -89,6 +90,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
               </TabsTrigger>
             ))}
           </TabsList>
+          </div>
         </div>
 
         <div className="px-4 md:px-6 py-5">

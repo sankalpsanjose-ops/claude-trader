@@ -296,7 +296,8 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         <div className="p-4 space-y-4">
 
           {/* Phase row */}
-          <div className="flex flex-wrap items-start gap-2">
+          <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div className="flex items-start gap-2 min-w-max pb-2">
 
             {/* Phase 1 */}
             <div className="flex flex-col items-center gap-1">
@@ -351,6 +352,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
               <div className="text-[11px] font-mono font-bold text-[#3fb950] bg-[#1a3a1a] border border-[#3fb95040] px-2.5 py-1 rounded text-center tracking-widest">QUEUE</div>
               <div className="text-[10px] text-[#484f58] mt-1 text-center">executed next<br/>market open</div>
             </div>
+          </div>
           </div>
 
           {/* Feedback loop note */}

@@ -89,7 +89,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
                     </TableCell>
                     <TableCell className="text-right text-[#e6edf3] font-mono">{t.quantity}</TableCell>
                     <TableCell className="text-[#8b949e] text-xs">{t.exchange}</TableCell>
-                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[200px] max-w-[400px]">{t.rationale}</TableCell>
+                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[120px] sm:min-w-[200px] max-w-[400px]">{t.rationale}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -104,7 +104,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
         </div>
       ) : (<>
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
           <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-1">Days Audited</div>
           <div className="text-2xl font-bold text-[#e6edf3]">{audits.length}</div>
@@ -144,8 +144,8 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
                 <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-center">Approved</TableHead>
                 <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-center">Rejected</TableHead>
                 <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider text-center">Sanity</TableHead>
-                <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Rejection Details</TableHead>
-                <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider">Sanity Notes</TableHead>
+                <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider hidden sm:table-cell">Rejection Details</TableHead>
+                <TableHead className="text-[#8b949e] text-[11px] uppercase tracking-wider hidden sm:table-cell">Sanity Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -179,7 +179,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
                         {a.sanity_passed ? 'PASS' : 'WARN'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-[#f85149] max-w-[220px]">
+                    <TableCell className="text-xs text-[#f85149] max-w-[220px] hidden sm:table-cell">
                       {rejCount > 0
                         ? a.rejections.map((r, i) => (
                             <div key={i} className="mb-1">
@@ -190,7 +190,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
                         : <span className="text-[#484f58]">All decisions passed</span>
                       }
                     </TableCell>
-                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[160px] max-w-[280px]">
+                    <TableCell className="text-xs text-[#8b949e] whitespace-normal break-words min-w-[160px] max-w-[280px] hidden sm:table-cell">
                       {a.sanity_notes || '—'}
                     </TableCell>
                   </TableRow>
