@@ -6,6 +6,7 @@ import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
 import { STARTING_CAPITAL } from '@/lib/trading'
+import { sendNewsletter } from '@/lib/newsletter'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 
 export const maxDuration = 300
@@ -200,6 +201,19 @@ export async function GET(req: NextRequest) {
       }))
     )
   }
+
+  sendNewsletter({
+    date: today,
+    marketSummary: analysis.market_summary,
+    journal: analysis.journal,
+    teamBrief: analysis.team_brief ?? undefined,
+    decisions: valid,
+    learning: analysis.learning ?? undefined,
+    portfolioValue: totalValue,
+    totalPnlPct,
+    observeOnly,
+    executionDate,
+  }).catch(() => {})
 
   return NextResponse.json({
     ok: true,

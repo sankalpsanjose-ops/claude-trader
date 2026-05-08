@@ -3,6 +3,7 @@ import { SectorChart } from './SectorChart'
 import { PerformanceChart } from './PerformanceChart'
 import { NiftyChart } from './NiftyChart'
 import { ClaudeJournal } from './ClaudeJournal'
+import { SubscribeCard } from './SubscribeCard'
 import type { PortfolioSummary } from '@/types'
 
 function fmtINR(n: number) {
@@ -93,6 +94,9 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
 
       {/* Claude's journal */}
       {data.latest_analysis && <ClaudeJournal analysis={data.latest_analysis} />}
+
+      {/* Newsletter subscribe */}
+      <SubscribeCard />
     </div>
   )
 }
