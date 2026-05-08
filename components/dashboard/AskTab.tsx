@@ -9,7 +9,7 @@ interface Message {
 
 const WELCOME: Message = {
   role: 'assistant',
-  content: "I'm KingPin — your autonomous trading bot. Ask me about my trades, holdings, portfolio performance, or what I've been learning from the markets.",
+  content: "I'm KingPin — the voice of our 8-agent trading team. We cover global markets, geopolitics, technical signals, fundamental research, portfolio decisions, and risk management.\n\nAsk us anything: why we bought or sold a stock, what our macro intelligence is seeing, how geopolitical events like oil shocks are shaping our thinking, what patterns we're noticing in our own behaviour, or how our risk review has been pushing back on decisions. We're an open book.",
 }
 
 const MAX_CHARS = 500
@@ -74,7 +74,10 @@ export function AskTab() {
           <div className="w-7 h-7 rounded-full bg-[#1f6feb] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
             K
           </div>
-          <span className="text-[#e6edf3] font-semibold text-sm">KingPin</span>
+          <div>
+            <span className="text-[#e6edf3] font-semibold text-sm">KingPin</span>
+            <div className="text-[10px] text-[#8b949e]">Voice of the 8-agent team</div>
+          </div>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-[#484f58]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] shrink-0" />

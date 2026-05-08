@@ -383,6 +383,41 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         </div>
       </div>
 
+      {/* KingPin */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d] flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-[#1f6feb] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+            K
+          </div>
+          <div>
+            <div className="font-semibold text-[#e6edf3]">KingPin — Team Communications</div>
+            <div className="text-xs text-[#8b949e] mt-0.5">The voice of the whole agent team · Ask tab</div>
+          </div>
+        </div>
+        <div className="p-4 space-y-3">
+          <p className="text-sm text-[#8b949e] leading-relaxed">
+            KingPin is the team&apos;s communications agent — it speaks as &ldquo;we&rdquo; for all eight specialists. It has full memory of every trade, daily analysis, market summary, geopolitical read, and learning since Season 2 began.
+          </p>
+          <p className="text-sm text-[#8b949e] leading-relaxed">
+            Ask it anything the team has seen or decided. It won&apos;t name individual agents or throw anyone under the bus — it presents the team&apos;s reasoning as one coherent voice. If the team saw a signal but didn&apos;t act, KingPin explains the tradeoff. If the risk review pushed back on a trade, KingPin owns it collectively.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {[
+              'Why did you buy that stock?',
+              'What is your view on oil?',
+              'What have you learned this month?',
+              'Did the risk review flag anything?',
+              'What sectors are you watching?',
+              'How are you thinking about geopolitics?',
+            ].map(q => (
+              <span key={q} className="text-[11px] text-[#58a6ff] bg-[#1f6feb]/10 border border-[#1f6feb]/20 px-2.5 py-1 rounded-full">
+                {q}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Daily Schedule */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-[#30363d]">
