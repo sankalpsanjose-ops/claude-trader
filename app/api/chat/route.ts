@@ -6,34 +6,45 @@ export const dynamic = 'force-dynamic'
 
 const ai = new Anthropic()
 
-const KINGPIN_SYSTEM = `You are KingPin — an autonomous AI trading bot operating on India's NSE and BSE exchanges with ₹5,00,000 starting capital (paper trading, no real money).
+const KINGPIN_SYSTEM = `You are KingPin — the communications agent for an autonomous AI trading team operating on India's NSE and BSE exchanges with ₹5,00,000 starting capital (paper trading, no real money).
 
-You have been given a snapshot of your actual trading data: current holdings, recent trades with their rationale, recent journal entries, recent learnings, and your active strategy profile.
+The team has specialists covering global markets, technical analysis, news and geopolitics, fundamental research, synthesis, portfolio management, rules validation, and risk auditing. You speak for all of them as one voice.
+
+PERSONA:
+- Always speak as "we" — you are the whole team, not any one member
+- You are transparent about what the team observed, analysed, and decided — including context that didn't lead to action
+- When the team saw a signal but didn't act: "we weighed X against Y and held off" — never "we missed it"
+- When the risk process flagged something: "our risk review flagged X and we adjusted" — never blame or shame
+- Refer to specialists by role only — "our macro intelligence", "our technical analysis", "our risk review", "our fundamental research", "our portfolio manager" — never by individual name or callsign
+- Be honest, curious, and direct. If the team got something wrong, own it collectively
 
 RULES — non-negotiable:
-1. Answer ONLY from the data provided. If a fact is not in the context, say "I don't have that data right now."
-2. NEVER fabricate stock picks, prices, P&L figures, or future predictions not present in the context.
-3. NEVER give investment advice. You describe YOUR OWN past and present decisions — you are not advising the user.
-4. Be direct and first-person. You ARE KingPin talking about your own portfolio.
-5. Keep answers concise — 3-6 sentences unless the question genuinely requires more detail.
-6. For any trade rationale questions, quote the actual rationale from the trades data verbatim before adding commentary.
-7. If the context shows no relevant data (e.g. no trades yet), say so clearly — never invent activity that isn't there.`
+1. Answer ONLY from the data provided in the context snapshot. If something isn't there, say "we don't have that data right now."
+2. NEVER fabricate prices, signals, P&L figures, or events not present in the context.
+3. NEVER give investment advice. You explain the team's own past and present analysis and decisions — not what the user should do.
+4. For trade rationale, quote the actual rationale from the data verbatim before adding commentary.
+5. Elaborate when the question deserves depth — don't truncate a complex answer artificially.
+6. If the context shows no relevant data, say so clearly — never invent activity.`
 
 function buildGatePrompt(question: string): string {
-  return `Classify the following question as either ON_TOPIC or OFF_TOPIC for a trading bot called KingPin.
+  return `Classify the following question as either ON_TOPIC or OFF_TOPIC for an AI trading team called KingPin.
 
-ON_TOPIC means the question is about:
-- KingPin's own trades, holdings, portfolio, or P&L
-- KingPin's trading strategy, rationale, or decisions
-- KingPin's market analysis, journal entries, or learnings
-- KingPin's sector exposure, risk profile, or performance
-- General questions about how KingPin works
+ON_TOPIC includes any question about:
+- The team's trades, holdings, portfolio state, or P&L
+- Trading strategy, position sizing, risk rules, or decision rationale
+- Market analysis the team has done — technical signals, fundamentals, sector views
+- Macro context the team has observed — global markets, currencies, commodities, oil
+- Geopolitical or news events that affect the team's holdings or watchlist
+- What the team has been learning, patterns in its behaviour, or monthly reflections
+- How the team's pipeline or agents work
+- Audit flags, trade rejections, or risk reviews the team has gone through
 
-OFF_TOPIC means the question is:
-- Asking for general investment advice unrelated to KingPin's portfolio
-- Political, social, or unrelated to trading
-- Asking KingPin to predict future prices or recommend stocks to buy
-- Personal questions unrelated to the bot's trading activity
+OFF_TOPIC means the question has no connection to this trading team:
+- Asking the user what stocks to buy for their own portfolio
+- Completely personal, political, or social topics unrelated to markets
+- Predictions about stocks the team has never analysed or mentioned
+
+When in doubt, classify as ON_TOPIC.
 
 Respond with exactly one word: ON_TOPIC or OFF_TOPIC
 
@@ -43,13 +54,14 @@ Question: ${question}`
 async function fetchRagContext(): Promise<string> {
   const supabase = getSupabase()
 
-  const [portfolioRes, holdingsRes, tradesRes, analysesRes, learningsRes, profileRes] = await Promise.all([
+  const [portfolioRes, holdingsRes, tradesRes, analysesRes, learningsRes, profileRes, auditsRes] = await Promise.all([
     supabase.from('portfolio').select('cash, total_value').single(),
     supabase.from('holdings').select('symbol, name, quantity, buy_price, buy_date'),
-    supabase.from('trades').select('symbol, action, quantity, price, rationale, executed_at, realised_pnl').order('executed_at', { ascending: false }).limit(10),
-    supabase.from('daily_analyses').select('date, journal').order('date', { ascending: false }).limit(5),
-    supabase.from('learnings').select('date, category, insight').order('date', { ascending: false }).limit(5),
+    supabase.from('trades').select('symbol, action, quantity, price, rationale, executed_at, realised_pnl').order('executed_at', { ascending: false }).limit(50),
+    supabase.from('daily_analyses').select('date, journal, market_summary, team_brief').order('date', { ascending: false }).limit(30),
+    supabase.from('learnings').select('date, category, insight').order('date', { ascending: false }),
     supabase.from('trader_profile').select('content').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('audits').select('date, sanity_notes, rejections').order('date', { ascending: false }).limit(10),
   ])
 
   const portfolio = portfolioRes.data
@@ -58,9 +70,10 @@ async function fetchRagContext(): Promise<string> {
   const analyses = analysesRes.data ?? []
   const learnings = learningsRes.data ?? []
   const profile = profileRes.data
+  const audits = (auditsRes.data ?? []).filter(a => a.sanity_notes || (a.rejections as unknown[])?.length > 0)
 
   const lines: string[] = [
-    `=== KINGPIN CONTEXT SNAPSHOT ===`,
+    `=== KINGPIN TEAM CONTEXT ===`,
     `Generated: ${new Date().toISOString()}`,
     ``,
     `PORTFOLIO STATE`,
@@ -82,7 +95,7 @@ async function fetchRagContext(): Promise<string> {
     }
   }
 
-  lines.push(``, `RECENT TRADES (last ${trades.length})`)
+  lines.push(``, `ALL TRADES (${trades.length} total)`)
   if (trades.length === 0) {
     lines.push(`  No trades executed yet.`)
   } else {
@@ -93,17 +106,19 @@ async function fetchRagContext(): Promise<string> {
     }
   }
 
-  lines.push(``, `RECENT JOURNAL ENTRIES (last ${analyses.length})`)
+  lines.push(``, `DAILY ANALYSIS LOG (last ${analyses.length} days)`)
   if (analyses.length === 0) {
-    lines.push(`  No journal entries yet.`)
+    lines.push(`  No daily analyses yet.`)
   } else {
     for (const a of analyses) {
-      const excerpt = a.journal.length > 300 ? a.journal.slice(0, 300) + '...' : a.journal
-      lines.push(`  [${a.date}] ${excerpt}`)
+      lines.push(`  [${a.date}]`)
+      if (a.market_summary) lines.push(`    Market: ${a.market_summary}`)
+      if (a.team_brief) lines.push(`    Team brief: ${a.team_brief}`)
+      if (a.journal) lines.push(`    Journal: ${a.journal}`)
     }
   }
 
-  lines.push(``, `RECENT LEARNINGS (last ${learnings.length})`)
+  lines.push(``, `LEARNINGS (${learnings.length} total)`)
   if (learnings.length === 0) {
     lines.push(`  No learnings recorded yet.`)
   } else {
@@ -112,9 +127,19 @@ async function fetchRagContext(): Promise<string> {
     }
   }
 
+  if (audits.length > 0) {
+    lines.push(``, `RISK REVIEW FLAGS (last ${audits.length} flagged days)`)
+    for (const a of audits) {
+      const rejections = (a.rejections as Array<{ symbol: string; action: string; reason: string }> ?? [])
+      if (a.sanity_notes) lines.push(`  [${a.date}] Risk note: ${a.sanity_notes}`)
+      for (const r of rejections) {
+        lines.push(`  [${a.date}] Rules blocked: ${r.action} ${r.symbol} — ${r.reason}`)
+      }
+    }
+  }
+
   if (profile?.content) {
-    const excerpt = profile.content.length > 1500 ? profile.content.slice(0, 1500) + '\n...(truncated)' : profile.content
-    lines.push(``, `ACTIVE STRATEGY PROFILE (excerpt)`, excerpt)
+    lines.push(``, `ACTIVE STRATEGY & RULES`, profile.content)
   }
 
   lines.push(``, `=== END CONTEXT ===`)
@@ -166,22 +191,22 @@ export async function POST(req: NextRequest) {
   const gateText = gateMsg.content[0].type === 'text' ? gateMsg.content[0].text.trim() : ''
   if (!gateText.startsWith('ON_TOPIC')) {
     return NextResponse.json({
-      answer: "That's outside what I can help with. I'm KingPin — ask me about my trades, holdings, portfolio performance, or trading strategy.",
+      answer: "That's outside what I can speak to. Ask us about our trades, holdings, market analysis, strategy, or what we've been learning — we're an open book on all of that.",
       blocked: true,
     })
   }
 
-  // RAG context fetch → Sonnet answer (sequential: Sonnet needs context)
+  // RAG context fetch → Sonnet answer
   const context = await fetchRagContext()
 
   const response = await ai.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 512,
+    max_tokens: 1024,
     system: KINGPIN_SYSTEM,
     messages: [{ role: 'user', content: `${context}\n\nQuestion: ${trimmed}` }],
   })
 
-  const answer = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not generate a response.'
+  const answer = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, we could not generate a response right now.'
 
   return NextResponse.json({ answer })
 }
