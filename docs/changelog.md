@@ -4,6 +4,17 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-05-12
+
+### Charlie now reads Indian RSS feeds alongside Yahoo Finance
+Charlie previously had no way to see political or government announcements — only stock-market-focused Yahoo Finance search results. PM Modi's May 10 Hyderabad speech (asking Indians to avoid buying gold) crashed jewellery stocks 12% on May 11, and the team missed it entirely.
+
+Fix: `fetchRssHeadlines()` added to `lib/yahoo.ts` — fetches up to 8 headlines each from Economic Times, ET Markets, Moneycontrol, and Business Standard RSS feeds in parallel (5s timeout per feed, failures silently skipped). Charlie now runs RSS fetch alongside Yahoo news at analysis time, merges them (RSS first, deduped), and passes up to 50 headlines to the model (up from 30). Added `'India economy policy'` as a third macro query for Yahoo search.
+
+This gives Charlie direct visibility into government policy, RBI announcements, geopolitical developments, and any PM-level speech that moves markets.
+
+---
+
 ## 2026-05-08
 
 ### Watchlist expanded to Nifty Next 50

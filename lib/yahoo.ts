@@ -124,6 +124,52 @@ export interface NewsItem {
   publisher: string
 }
 
+// Indian business news RSS feeds — catches political/macro events Yahoo Finance misses
+const RSS_FEEDS = [
+  { url: 'https://economictimes.indiatimes.com/rssfeedsdefault.cms', publisher: 'Economic Times' },
+  { url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms', publisher: 'ET Markets' },
+  { url: 'https://www.moneycontrol.com/rss/MCtopnews.xml', publisher: 'Moneycontrol' },
+  { url: 'https://www.business-standard.com/rss/home_page_top_stories.rss', publisher: 'Business Standard' },
+]
+
+export async function fetchRssHeadlines(limit = 8): Promise<NewsItem[]> {
+  const results = await Promise.allSettled(
+    RSS_FEEDS.map(async ({ url, publisher }) => {
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(5000),
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+      })
+      if (!res.ok) return [] as NewsItem[]
+      const xml = await res.text()
+      const items: NewsItem[] = []
+      for (const match of xml.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/g)) {
+        const raw = match[1].match(/<title[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/)?.[1]?.trim()
+        if (raw && raw.length > 10) {
+          items.push({
+            title: raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'"),
+            publisher,
+          })
+        }
+        if (items.length >= limit) break
+      }
+      return items
+    })
+  )
+
+  const all: NewsItem[] = []
+  for (const r of results) {
+    if (r.status === 'fulfilled') all.push(...r.value)
+  }
+
+  // Deduplicate by title
+  const seen = new Set<string>()
+  return all.filter(n => {
+    if (seen.has(n.title)) return false
+    seen.add(n.title)
+    return true
+  })
+}
+
 // Accepts both stock symbols (e.g. "RELIANCE.NS") and free-text search queries
 export async function getNewsForSymbols(queries: string[]): Promise<NewsItem[]> {
   const allNews: NewsItem[] = []

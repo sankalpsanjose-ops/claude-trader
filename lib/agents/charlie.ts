@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { getNewsForSymbols } from '@/lib/yahoo'
+import { getNewsForSymbols, fetchRssHeadlines } from '@/lib/yahoo'
 import type { QuoteResult } from '@/lib/yahoo'
 import type { CharlieReport } from './types'
 
@@ -13,14 +13,26 @@ const FALLBACK: CharlieReport = {
 }
 
 export async function runCharlie(topMovers: QuoteResult[], heldSymbols: string[]): Promise<CharlieReport> {
-  // Fetch news for held stocks, top movers, and broad macro queries
+  // Fetch Yahoo Finance news + Indian RSS feeds in parallel
   const symbolQueries = [...new Set([...heldSymbols, ...topMovers.map(q => q.symbol)])].slice(0, 6)
-  const macroQueries = ['India Nifty stock market', 'crude oil geopolitics']
-  const news = await getNewsForSymbols([...symbolQueries, ...macroQueries])
+  const macroQueries = ['India Nifty stock market', 'crude oil geopolitics', 'India economy policy']
+  const [yahooNews, rssNews] = await Promise.all([
+    getNewsForSymbols([...symbolQueries, ...macroQueries]),
+    fetchRssHeadlines(10),
+  ])
+
+  // RSS headlines first — they catch political/macro events Yahoo misses
+  const allNews = [...rssNews, ...yahooNews]
+  const seen = new Set<string>()
+  const news = allNews.filter(n => {
+    if (seen.has(n.title)) return false
+    seen.add(n.title)
+    return true
+  })
 
   if (news.length === 0) return FALLBACK
 
-  const newsText = news.slice(0, 30).map(n => `- ${n.title}${n.publisher ? ` (${n.publisher})` : ''}`).join('\n')
+  const newsText = news.slice(0, 50).map(n => `- ${n.title}${n.publisher ? ` (${n.publisher})` : ''}`).join('\n')
 
   const moversText = topMovers.slice(0, 10)
     .map(q => `${q.symbol} ${q.changePct >= 0 ? '+' : ''}${q.changePct.toFixed(2)}%`)
