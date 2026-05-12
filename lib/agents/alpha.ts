@@ -7,9 +7,12 @@ const INDICES: Record<string, string> = {
   '^N225':     'Nikkei 225 (Japan)',
   '^HSI':      'Hang Seng (HK)',
   '^STOXX50E': 'Euro Stoxx 50',
+  '^SSEC':     'Shanghai Composite (China)',
+  '^INDIAVIX': 'India VIX',
 }
 
 const COMMODITIES: Record<string, string> = {
+  'BZ=F':  'Crude Oil Brent',
   'CL=F':  'Crude Oil WTI',
   'GC=F':  'Gold',
   'NG=F':  'Natural Gas',
@@ -18,6 +21,7 @@ const COMMODITIES: Record<string, string> = {
 const FOREX: Record<string, string> = {
   'USDINR=X':   'USD/INR',
   'DX-Y.NYB':   'US Dollar Index',
+  '^TNX':       'US 10Y Treasury Yield',
 }
 
 export async function runAlpha(): Promise<AlphaReport> {
