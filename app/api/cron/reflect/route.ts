@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
 import { STARTING_CAPITAL } from '@/lib/trading'
+import { todayIST, offsetDaysIST } from '@/lib/ist'
 
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
@@ -14,10 +15,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const today = new Date()
-  const thirtyDaysAgo = new Date(today)
-  thirtyDaysAgo.setDate(today.getDate() - 30)
-  const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
+  const today = todayIST()
+  const fromDate = offsetDaysIST(-30)
 
   // Fetch last 30 days of data
   const [learningsRes, tradesRes, analysesRes, profileRes, auditsRes] = await Promise.all([
@@ -112,7 +111,7 @@ Respond with JSON only:
   }
 
   const reflection = JSON.parse(match[0])
-  const monthLabel = today.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+  const monthLabel = new Date(today).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
 
   // Store monthly reflection as a learning entry
   const reflectionInsight = [
@@ -124,7 +123,7 @@ Respond with JSON only:
 
   await Promise.all([
     supabaseAdmin.from('learnings').upsert({
-      date: today.toISOString().split('T')[0],
+      date: today,
       category: 'monthly',
       insight: reflectionInsight,
       source: 'monthly_reflection',

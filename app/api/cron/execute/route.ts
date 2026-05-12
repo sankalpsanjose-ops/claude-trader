@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { getOpenPrices } from '@/lib/yahoo'
 import { MIN_CASH_RESERVE } from '@/lib/trading'
 import { isTradingDay } from '@/lib/market-calendar'
+import { todayIST } from '@/lib/ist'
 import type { PendingTrade } from '@/types'
 
 export const maxDuration = 120
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayIST()
   if (!isTradingDay(today)) {
     return NextResponse.json({ ok: true, skipped: true, reason: 'Market closed today — pending trades preserved' })
   }

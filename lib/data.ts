@@ -1,6 +1,7 @@
 import { getSupabase } from '@/lib/supabase'
 import { getCurrentPrices } from '@/lib/yahoo'
 import { enrichHoldings, calcTotalValue, calcSectorAllocation, STARTING_CAPITAL } from '@/lib/trading'
+import { todayIST, offsetDaysIST, dateToIST } from '@/lib/ist'
 import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, PerformancePoint, Learning, TraderProfile, PendingTrade, DailyAnalysis } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -58,11 +59,11 @@ async function fetchNiftyData(
   )
 
   // --- Step 3: today's close — narrow Yahoo fetch if not yet in DB ---
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = todayIST()
   if (!storedByDate.has(todayStr)) {
     try {
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+      const yesterday = offsetDaysIST(-1)
+      const tomorrow = offsetDaysIST(1)
       const recentRows: Array<{ date: Date; close?: number | null }> = await yf.historical(
         '^NSEI',
         { period1: yesterday, period2: tomorrow, interval: '1d' },
@@ -70,7 +71,7 @@ async function fetchNiftyData(
       )
       for (const r of recentRows ?? []) {
         if (r.close != null) {
-          const d = r.date.toISOString().split('T')[0]
+          const d = dateToIST(r.date)
           if (d > from) storedByDate.set(d, r.close)
         }
       }
@@ -126,8 +127,7 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
 
   // Days since inception
   const inception = new Date(portfolio.inception_date)
-  const today = new Date()
-  const daysRunning = Math.max(1, Math.floor((today.getTime() - inception.getTime()) / (1000 * 60 * 60 * 24)))
+  const daysRunning = Math.max(1, Math.floor((Date.now() - inception.getTime()) / (1000 * 60 * 60 * 24)))
 
   // Annualised return: (1 + r)^(365/days) - 1
   const annualisedReturn = (Math.pow(1 + totalPnlPct / 100, 365 / daysRunning) - 1) * 100
@@ -138,7 +138,7 @@ export async function getSummary(): Promise<PortfolioSummary | null> {
   const todayPnl = yesterday ? totalValue - yesterday.total_value : 0
 
   // Performance history: use snapshots + inject today's live value as final point
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = todayIST()
   const history = snapshots
     .filter((s: { date: string }) => s.date >= portfolio.inception_date)
     .map((s: { date: string; total_value: number }) => ({ date: s.date, value: s.total_value }))

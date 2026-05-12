@@ -7,6 +7,7 @@ import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
 import { STARTING_CAPITAL } from '@/lib/trading'
 import { sendNewsletter } from '@/lib/newsletter'
+import { todayIST, offsetDaysIST } from '@/lib/ist'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 
 export const maxDuration = 300
@@ -17,8 +18,8 @@ const yf = new YahooFinanceClass({ suppressNotices: ['yahooSurvey', 'ripHistoric
 
 async function fetchNiftyClose(): Promise<number | null> {
   try {
-    const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const today = todayIST()
+    const yesterday = offsetDaysIST(-1)
     const rows: Array<{ date: Date; close?: number | null }> = await yf.historical(
       '^NSEI',
       { period1: yesterday, period2: today, interval: '1d' },
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayIST()
   const todayIsTrading = isTradingDay(today)
   const observeOnly = !isTomorrowTradingDay(today)
   const executionDate = getNextTradingDay(today)
