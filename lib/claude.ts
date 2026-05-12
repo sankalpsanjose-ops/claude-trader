@@ -103,9 +103,18 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
 
   const pastJournals = input.past_analyses.length === 0
     ? 'This is my first analysis.'
-    : input.past_analyses.slice(0, 5).map(a =>
-        `  [${a.date}] ${a.journal.slice(0, 200)}...`
-      ).join('\n')
+    : input.past_analyses.slice(0, 7).map(a => {
+        const decisions = (a.decisions ?? [])
+          .filter((d: { action: string }) => d.action !== 'HOLD')
+          .map((d: { action: string; quantity?: number; symbol: string; rationale: string }) =>
+            `      ${d.action} ${d.quantity ?? ''}x ${d.symbol} — ${d.rationale}`
+          ).join('\n')
+        return [
+          `  [${a.date}] ${a.market_summary ?? ''}`,
+          `  ${a.journal.slice(0, 600)}${a.journal.length > 600 ? '...' : ''}`,
+          decisions ? `  Decisions made:\n${decisions}` : '  No trades queued.',
+        ].join('\n')
+      }).join('\n\n')
 
   const priceNote = input.today_is_trading_day
     ? `Today's prices reflect today's market close.`
