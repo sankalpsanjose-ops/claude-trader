@@ -54,13 +54,50 @@ function formatBravo(signal: TechnicalSignal, symbol: string): string {
     : signal.momentum === 'weak'
     ? 'weak/negative momentum'
     : 'neutral momentum'
-  return `${symbol}: RSI ${signal.rsi14} (${rsiNote}), currently ${smaStatus}. 10-day price shows ${mom}. Current price ₹${signal.currentPrice.toFixed(2)}.`
+  const volNote = signal.volumeRatio != null
+    ? signal.volumeRatio >= 2.0
+      ? ` · vol ${signal.volumeRatio.toFixed(1)}× avg — HIGH confirmation`
+      : signal.volumeRatio >= 1.5
+      ? ` · vol ${signal.volumeRatio.toFixed(1)}× avg — elevated`
+      : ` · vol ${signal.volumeRatio.toFixed(1)}× avg`
+    : ''
+  return `${symbol}: RSI ${signal.rsi14} (${rsiNote}), currently ${smaStatus}. 10-day price shows ${mom}. Current price ₹${signal.currentPrice.toFixed(2)}.${volNote}`
+}
+
+function MacroMemoryCard({ content }: { content: string }) {
+  const [open, setOpen] = useState(false)
+  if (!content?.trim()) return null
+  return (
+    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden mb-3">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#1c2128] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-[#e6edf3] text-sm">Charlie&apos;s Macro Memory</span>
+          <span className="text-[10px] bg-[#f0883e22] text-[#f0883e] border border-[#f0883e40] px-2 py-0.5 rounded font-semibold">
+            Self-updating · persists across sessions
+          </span>
+        </div>
+        <span className="text-[#484f58] text-xs">{open ? '▲ collapse' : '▼ expand'}</span>
+      </button>
+      {open && (
+        <div className="border-t border-[#30363d] px-4 py-4">
+          <pre className="text-[12px] text-[#c9d1d9] leading-relaxed whitespace-pre-wrap font-sans">
+            {content}
+          </pre>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function DailyBrief({ alpha, charlie, echo }: { alpha: AlphaReport; charlie: CharlieReport; echo: EchoReport }) {
   const [open, setOpen] = useState(true)
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden mb-3">
+    <div>
+      <MacroMemoryCard content={charlie.macroMemory ?? ''} />
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden mb-3">
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#1c2128] transition-colors"
@@ -150,6 +187,7 @@ function DailyBrief({ alpha, charlie, echo }: { alpha: AlphaReport; charlie: Cha
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
