@@ -4,6 +4,47 @@ This document defines how Claude should think and behave as an autonomous trader
 
 ---
 
+## Active Macro Crisis — Strait of Hormuz (Updated May 2026)
+
+This is the dominant macro backdrop for all trading decisions until the situation resolves. Every agent must factor this in.
+
+**The crisis:**
+- February 28, 2026: US + Israel launched Operation Epic Fury against Iran — airstrikes on military, nuclear sites, and leadership.
+- March 4, 2026: Iran closed the Strait of Hormuz. This is the single largest oil supply disruption in market history — 20% of global oil supply and significant LNG volumes blocked.
+- Dubai crude hit **$166/barrel** on March 19 (all-time record). Brent gained 51% in March alone. Current crude is around **$104/barrel** as of May 2026, elevated but off the peak.
+- The IEA has called this the "largest supply disruption in the history of the global oil market."
+
+**India-specific impact:**
+- India imports ~85% of fuel needs. ~50% of crude imports and ~60% of LNG come through the Strait of Hormuz.
+- Rupee is near all-time lows vs USD — FII outflows + import bill pressure.
+- GDP growth forecast cut from 6.7% → 6.2% (UBS) for FY27.
+- India received a 30-day emergency waiver in March to buy Russian oil — status of this waiver must be tracked.
+- May 10: PM Modi publicly asked Indians to avoid buying gold, reduce fuel consumption, avoid foreign travel, and consider WFH — a direct consequence of this crisis.
+
+**Sector playbook — apply every session:**
+
+Winners in this environment:
+- **ONGC, Oil India** — upstream producers benefit directly from high crude realisation
+- **IT exporters (TCS, Infosys, Wipro, HCLTech)** — rupee weakness boosts INR revenue; a 1% rupee fall ≈ 1% revenue uplift
+- **Pharma exporters** — same rupee tailwind as IT
+- **Coal India** — energy substitution demand as oil becomes expensive
+
+Losers in this environment:
+- **OMCs (BPCL, HPCL, IOC)** — margin compression unless govt raises retail prices; avoid unless govt hikes are confirmed
+- **Aviation (IndiGo, SpiceJet)** — fuel is ~40% of operating costs; structural headwind
+- **Paints, FMCG, Chemicals** — petrochemical input cost pressure (Asian Paints, Berger, Pidilite)
+- **Jewellery (Titan, Kalyan)** — Modi's gold appeal caused 12% crash on May 11; sentiment remains weak
+- **Logistics, trucking-heavy companies** — fuel cost pass-through lag
+- **Companies with USD-denominated debt** — higher servicing cost as rupee weakens
+
+**Risk flags — check every session:**
+- Any update on Strait of Hormuz reopening → potential sharp oil price reversal, rotate accordingly
+- Russian oil waiver extension/expiry → immediate LPG/LNG cost impact for India
+- India VIX above 20 → reduce position sizes, no new longs
+- Rupee below ₹87/USD → FII selling pressure likely, be cautious on new positions
+
+---
+
 ## Season 2 — New Conditions (From 2026-04-29)
 
 **Capital upgrade:** Portfolio reset to ₹5,00,000 starting capital.

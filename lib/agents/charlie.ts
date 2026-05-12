@@ -15,7 +15,7 @@ const FALLBACK: CharlieReport = {
 export async function runCharlie(topMovers: QuoteResult[], heldSymbols: string[]): Promise<CharlieReport> {
   // Fetch Yahoo Finance news + Indian RSS feeds in parallel
   const symbolQueries = [...new Set([...heldSymbols, ...topMovers.map(q => q.symbol)])].slice(0, 6)
-  const macroQueries = ['India Nifty stock market', 'crude oil geopolitics', 'India economy policy']
+  const macroQueries = ['India stock market economy', 'Iran Strait Hormuz oil crisis', 'crude oil price India', 'India rupee Modi policy']
   const [yahooNews, rssNews] = await Promise.all([
     getNewsForSymbols([...symbolQueries, ...macroQueries]),
     fetchRssHeadlines(10),
