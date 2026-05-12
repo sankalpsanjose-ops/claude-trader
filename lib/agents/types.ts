@@ -12,6 +12,8 @@ export interface TechnicalSignal {
   aboveSma50: boolean
   momentum: 'strong' | 'weak' | 'neutral'
   currentPrice: number
+  avgVolume20: number
+  volumeRatio: number
 }
 
 export interface BravoReport {
@@ -23,6 +25,7 @@ export interface CharlieReport {
   geopoliticalRisks: string[]
   macroThemes: string[]
   overallSentiment: 'bullish' | 'bearish' | 'neutral'
+  macroMemory: string
 }
 
 export interface DeltaReport {
