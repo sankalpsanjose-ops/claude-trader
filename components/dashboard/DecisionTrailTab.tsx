@@ -134,7 +134,10 @@ function DailyBrief({ alpha, charlie, echo }: { alpha: AlphaReport; charlie: Cha
               {Object.values(alpha.forex).map(v => (
                 <span key={v.name}>
                   <span className="text-[#e6edf3] font-medium">{v.name}</span>{' '}
-                  <span className="text-[#8b949e]">{v.rate.toFixed(2)}</span>
+                  <span className="text-[#8b949e]">{v.rate.toFixed(2)}</span>{' '}
+                  <span className={v.changePct >= 0 ? 'text-[#3fb950]' : 'text-[#f85149]'}>
+                    {v.changePct >= 0 ? '+' : ''}{v.changePct.toFixed(2)}%
+                  </span>
                 </span>
               ))}
             </div>
@@ -209,6 +212,7 @@ function SymbolSection({ symbol, action, quantity, foxtrotRationale, bravo, char
   const charlieData = charlie.perSymbol[symbol]
   const deltaData = delta.perSymbol[symbol]
   const echoData = echo.perSymbol[symbol]
+  const hasAgentData = !!(bravoSignal || charlieData || deltaData || echoData)
 
   const actionColors: Record<string, string> = {
     BUY:  'text-[#3fb950] border-[#3fb950]',
@@ -230,7 +234,7 @@ function SymbolSection({ symbol, action, quantity, foxtrotRationale, bravo, char
           {quantity && <span className="text-[12px] text-[#8b949e]">{quantity} shares</span>}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#484f58]">click to read agent reports</span>
+          {hasAgentData && <span className="text-[11px] text-[#484f58]">click to read agent reports</span>}
           <span className="text-[#484f58] text-xs">{open ? '▲' : '▼'}</span>
         </div>
       </button>
@@ -308,7 +312,7 @@ export function DecisionTrailTab({ analyses }: Props) {
       {/* Agent directory */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
         <div className="text-[11px] uppercase tracking-wider font-semibold text-[#8b949e] mb-3">
-          The Trading Team · 6 agents ran today
+          Intelligence pipeline · 6 of 8 agents shown · Golf &amp; Hotel validation in Audit tab
         </div>
         <div className="flex flex-wrap gap-3">
           {(['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot'] as const).map(agent => (
