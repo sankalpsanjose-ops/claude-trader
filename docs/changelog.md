@@ -4,6 +4,30 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-05-12 — Agent Intelligence Upgrade
+
+### Charlie: persistent macro memory + Sonnet upgrade
+Charlie now maintains a living macro intelligence document in the `macro_context` Supabase table. Each session: read yesterday's document → update with today's headlines → write back. All downstream agents (Echo, Foxtrot) receive the accumulated context. Charlie upgraded Haiku → Sonnet to handle multi-session reasoning. Zero hardcoded events — Charlie builds and owns the document entirely.
+
+### Alpha: expanded global data
+Added Brent Crude (`BZ=F`), India VIX (`^INDIAVIX`), US 10-Year Treasury Yield (`^TNX`), Shanghai Composite (`^SSEC`). India uses Brent/Dubai pricing, not WTI. India VIX is the local fear gauge. US 10Y yield moves rate-sensitive sectors. China indices move metals.
+
+### Bravo: volume confirmation on all 70 watchlist symbols
+Every technical signal now includes `volumeRatio` (today's volume / 20-day average). A breakout on 2× volume is confirmed; on 0.5× it's noise. Bravo now runs on all 70 watchlist symbols (up from ~15 held + top movers).
+
+### Delta: expanded to held + top 20 movers
+Delta now always analyses all held positions first, then fills remaining slots with top movers by % change — up from a hard cap of 15 symbols.
+
+### Foxtrot: 7-day history with decisions
+Past context expanded from 5 × 200-char snippets to 7 days × 600-char journals, each including the actual BUY/SELL decisions made that day. Foxtrot can now see its own patterns across a week.
+
+### Removed: hardcoded Hormuz section from trader profile
+The manually-added crisis section is removed. Charlie's macro memory replaces it permanently and stays current automatically.
+
+Requires migration: `010_macro_context.sql` (run in Supabase SQL editor).
+
+---
+
 ## 2026-05-12
 
 ### Charlie now reads Indian RSS feeds alongside Yahoo Finance
