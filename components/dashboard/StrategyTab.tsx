@@ -55,7 +55,7 @@ const AGENTS: AgentDef[] = [
     role: 'Supervisor',
     type: 'Sonnet',
     typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
-    description: 'Synthesises Alpha–Delta reports, identifies where specialists agree or conflict, and writes a final intelligence brief for the Portfolio Manager.',
+    description: 'Synthesises Alpha–Delta reports alongside Charlie\'s macro memory document, identifies where specialists agree or conflict, and produces the intelligence brief for the Portfolio Manager.',
     alwaysActive: false,
   },
   {
@@ -63,7 +63,7 @@ const AGENTS: AgentDef[] = [
     role: 'Portfolio Manager',
     type: 'Sonnet',
     typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
-    description: 'Makes the final buy/sell/hold decisions using the intelligence brief (team mode) or raw market data (solo mode). Writes the daily journal and captures one trading lesson.',
+    description: 'Makes the final buy/sell/hold decisions using the intelligence brief (team mode) or raw market data (solo mode). Reads 7 days of its own journal history including past decisions. Writes the daily journal and captures one trading lesson.',
     alwaysActive: true,
   },
   {
@@ -71,7 +71,7 @@ const AGENTS: AgentDef[] = [
     role: 'Validator',
     type: 'Pure TS',
     typeColour: 'bg-[#21262d] text-[#8b949e]',
-    description: 'Enforces hard trading rules — ₹5,000 cash reserve, 20% position limit, valid NSE/BSE symbol suffixes — before any decision can reach execution.',
+    description: 'Enforces hard trading rules — ₹50,000 cash reserve, 20% position limit, valid NSE/BSE symbol suffixes — before any decision can reach execution.',
     alwaysActive: true,
   },
   {
