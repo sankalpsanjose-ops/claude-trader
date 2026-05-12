@@ -23,7 +23,8 @@ function fmtBravo(r: BravoReport): string {
   const lines = ['TECHNICAL SIGNALS (Bravo):']
   for (const [symbol, s] of Object.entries(r.signals)) {
     const trend = s.aboveSma50 ? 'above 50SMA' : 'below 50SMA'
-    lines.push(`  ${symbol}: RSI=${s.rsi14}, ${trend}, momentum=${s.momentum}`)
+    const vol = s.volumeRatio >= 2.0 ? `vol=${s.volumeRatio}x HIGH` : s.volumeRatio >= 1.5 ? `vol=${s.volumeRatio}x elevated` : `vol=${s.volumeRatio}x`
+    lines.push(`  ${symbol}: RSI=${s.rsi14}, ${trend}, momentum=${s.momentum}, ${vol}`)
   }
   if (Object.keys(r.signals).length === 0) lines.push('  No signals computed.')
   return lines.join('\n')
@@ -61,14 +62,19 @@ export async function runEcho(
   bravo: BravoReport,
   charlie: CharlieReport,
   delta: DeltaReport,
+  macroMemory: string,
 ): Promise<EchoReport> {
   const context = [fmtAlpha(alpha), fmtBravo(bravo), fmtCharlie(charlie), fmtDelta(delta)].join('\n\n')
 
+  const macroMemorySection = macroMemory.trim()
+    ? `CHARLIE'S MACRO INTELLIGENCE DOCUMENT (built from news across sessions):\n${macroMemory}\n\n`
+    : ''
+
   const prompt = `You are Echo, the Supervisor for an Indian equity trading team. Four specialist agents have filed their reports below.
 
-${context}
+${macroMemorySection}${context}
 
-Synthesise their findings for the Portfolio Manager. For each stock, identify where specialists agree (high conviction) vs. conflict (e.g. RSI overbought but analyst says strong buy). Note macro amplifiers (e.g. crude drop = bullish for OMCs, USD strength = bullish for IT exporters).
+Synthesise their findings for the Portfolio Manager. For each stock, identify where specialists agree (high conviction) vs. conflict (e.g. RSI overbought but analyst says strong buy). Note macro amplifiers from the macro intelligence document and today's Alpha data.
 
 Respond with JSON only — no prose outside the JSON:
 {
@@ -80,7 +86,7 @@ Respond with JSON only — no prose outside the JSON:
       "conflicts": ["Each conflict: which two agents disagree, what each says, and how Foxtrot should weigh them"]
     }
   },
-  "macroContext": "3-4 sentences: global backdrop, key macro tailwinds and risks for Indian equities today. Mention FII/DII flows if known from Alpha data, commodity impact on relevant sectors, and any central bank or currency development.",
+  "macroContext": "3-4 sentences: global backdrop, key macro tailwinds and risks for Indian equities today. Reference the macro memory document and today's Alpha data.",
   "topOpportunities": ["SYMBOL.NS: one-line thesis"],
   "topRisks": ["risk description"]
 }
