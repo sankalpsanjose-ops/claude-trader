@@ -7,7 +7,6 @@ function computeRSI(closes: number[], period = 14): number {
   let avgGain = 0
   let avgLoss = 0
 
-  // First period: simple average
   for (let i = 1; i <= period; i++) {
     const change = closes[i] - closes[i - 1]
     if (change > 0) avgGain += change
@@ -16,7 +15,6 @@ function computeRSI(closes: number[], period = 14): number {
   avgGain /= period
   avgLoss /= period
 
-  // Wilder smoothing for the rest
   for (let i = period + 1; i < closes.length; i++) {
     const change = closes[i] - closes[i - 1]
     avgGain = (avgGain * (period - 1) + Math.max(change, 0)) / period
@@ -42,7 +40,9 @@ export async function runBravo(symbols: string[]): Promise<BravoReport> {
     if (rows.length < 20) continue
 
     const closes = rows.map(r => r.close)
+    const volumes = rows.map(r => r.volume ?? 0)
     const currentPrice = closes[closes.length - 1]
+
     const rsi14 = computeRSI(closes)
     const sma20 = computeSMA(closes, 20)
     const sma50 = computeSMA(closes, 50)
@@ -52,6 +52,11 @@ export async function runBravo(symbols: string[]): Promise<BravoReport> {
     const momentum: 'strong' | 'weak' | 'neutral' =
       momentumPct > 3 ? 'strong' : momentumPct < -3 ? 'weak' : 'neutral'
 
+    const recentVolumes = volumes.slice(-20)
+    const avgVolume20 = recentVolumes.reduce((sum, v) => sum + v, 0) / recentVolumes.length
+    const latestVolume = volumes[volumes.length - 1] ?? 0
+    const volumeRatio = avgVolume20 > 0 ? Math.round((latestVolume / avgVolume20) * 100) / 100 : 1
+
     signals[symbol] = {
       rsi14: Math.round(rsi14 * 10) / 10,
       sma20: Math.round(sma20 * 100) / 100,
@@ -60,6 +65,8 @@ export async function runBravo(symbols: string[]): Promise<BravoReport> {
       aboveSma50: currentPrice > sma50,
       momentum,
       currentPrice,
+      avgVolume20: Math.round(avgVolume20),
+      volumeRatio,
     }
   }
 
