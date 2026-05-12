@@ -23,7 +23,7 @@ const AGENTS: AgentDef[] = [
     role: 'World Markets',
     type: 'Pure Data',
     typeColour: 'bg-[#21262d] text-[#8b949e]',
-    description: 'Fetches global indices (S&P 500, FTSE, Nikkei, Hang Seng, Euro Stoxx), commodities (crude oil, gold, natural gas), and forex (USD/INR, Dollar Index) before every analysis.',
+    description: 'Fetches global indices (S&P 500, FTSE, Nikkei, Hang Seng, Euro Stoxx, Shanghai, India VIX), commodities (Brent crude, WTI, gold, natural gas), and forex (USD/INR, Dollar Index, US 10Y yield) before every analysis.',
     alwaysActive: false,
   },
   {
@@ -31,15 +31,15 @@ const AGENTS: AgentDef[] = [
     role: 'Technical Analysis',
     type: 'Pure TS',
     typeColour: 'bg-[#21262d] text-[#8b949e]',
-    description: 'Computes RSI-14, 20/50-day SMAs, and 10-day price momentum for all held and watchlist stocks using 60 days of historical OHLC data.',
+    description: 'Computes RSI-14, 20/50-day SMAs, 10-day price momentum, and volume ratio (today vs 20-day average) for all 70 watchlist stocks using 60 days of historical OHLC data.',
     alwaysActive: false,
   },
   {
     callsign: 'CHARLIE',
     role: 'News & Geopolitics',
-    type: 'Haiku',
-    typeColour: 'bg-[#1f3a5f] text-[#79c0ff]',
-    description: 'Reads market headlines and flags geopolitical risks — wars, sanctions, trade disputes, elections, central bank surprises — that could move Indian equities.',
+    type: 'Sonnet',
+    typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
+    description: 'Reads Indian RSS feeds and market headlines, flags geopolitical risks and macro themes, and maintains a living macro intelligence document that persists across sessions — no human input required.',
     alwaysActive: false,
   },
   {
@@ -47,7 +47,7 @@ const AGENTS: AgentDef[] = [
     role: 'Research',
     type: 'Sonnet',
     typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
-    description: 'Analyses P/E ratios, analyst price targets, and recommendation consensus for held and watchlist stocks sourced from Yahoo Finance fundamentals.',
+    description: 'Analyses P/E ratios, analyst price targets, and recommendation consensus for all held positions plus the top 20 movers by absolute % change.',
     alwaysActive: false,
   },
   {
