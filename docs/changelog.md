@@ -4,6 +4,17 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-05-08
+
+### Watchlist expanded to Nifty Next 50
+`DEFAULT_WATCHLIST` in `lib/yahoo.ts` expanded from 40 Nifty 50 stocks to 70 stocks by adding 30 Nifty Next 50 names. Rationale: pure Nifty 50 trading sets a low ceiling on alpha — the index already owns the same stocks. Nifty Next 50 stocks have more analyst blind spots, higher beta, and are accessible at ₹5L portfolio size where institutions can't build meaningful positions.
+
+Added: ZOMATO, TRENT, APOLLOHOSP, DMART, SIEMENS, HAVELLS, PIDILITIND, DABUR, MARICO, GODREJCP, COLPAL, BERGEPAINT, MUTHOOTFIN, TORNTPHARM, LUPIN, DLF, GODREJPROP, OBEROIRLTY, IRCTC, NAUKRI, POLYCAB, PERSISTENT, LTIM, OFSS, PIIND, CHOLAFIN, SBICARD, HDFCLIFE, SBILIFE, TATACONSUM.
+
+Performance vs Nifty 50 to be reviewed after one week (2026-05-15).
+
+---
+
 ## 2026-05-07 (continued)
 
 ### Ask KingPin — RAG chat feature

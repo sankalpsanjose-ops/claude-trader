@@ -12,8 +12,9 @@ export interface QuoteResult {
   name: string
 }
 
-// Nifty 50 + Sensex 30 starting universe
+// Nifty 50 + Nifty Next 50 starting universe
 export const DEFAULT_WATCHLIST = [
+  // Nifty 50
   'RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'ICICIBANK.NS',
   'HINDUNILVR.NS', 'ITC.NS', 'SBIN.NS', 'BHARTIARTL.NS', 'KOTAKBANK.NS',
   'AXISBANK.NS', 'LT.NS', 'ASIANPAINT.NS', 'MARUTI.NS', 'SUNPHARMA.NS',
@@ -22,6 +23,13 @@ export const DEFAULT_WATCHLIST = [
   'TECHM.NS', 'DRREDDY.NS', 'CIPLA.NS', 'DIVISLAB.NS', 'JSWSTEEL.NS',
   'TATASTEEL.NS', 'ONGC.NS', 'HEROMOTOCO.NS', 'BAJAJ-AUTO.NS', 'ADANIENT.NS',
   'ADANIPORTS.NS', 'COALINDIA.NS', 'GRASIM.NS', 'BPCL.NS', 'INDUSINDBK.NS',
+  // Nifty Next 50 — added 2026-05-08 for wider alpha surface
+  'ZOMATO.NS', 'TRENT.NS', 'APOLLOHOSP.NS', 'DMART.NS', 'SIEMENS.NS',
+  'HAVELLS.NS', 'PIDILITIND.NS', 'DABUR.NS', 'MARICO.NS', 'GODREJCP.NS',
+  'COLPAL.NS', 'BERGEPAINT.NS', 'MUTHOOTFIN.NS', 'TORNTPHARM.NS', 'LUPIN.NS',
+  'DLF.NS', 'GODREJPROP.NS', 'OBEROIRLTY.NS', 'IRCTC.NS', 'NAUKRI.NS',
+  'POLYCAB.NS', 'PERSISTENT.NS', 'LTIM.NS', 'OFSS.NS', 'PIIND.NS',
+  'CHOLAFIN.NS', 'SBICARD.NS', 'HDFCLIFE.NS', 'SBILIFE.NS', 'TATACONSUM.NS',
 ]
 
 export async function getQuotes(symbols: string[]): Promise<QuoteResult[]> {
