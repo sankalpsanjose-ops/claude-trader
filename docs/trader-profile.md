@@ -84,9 +84,12 @@ If you cannot answer all three clearly, do not buy.
 ## Exit Criteria
 
 **Stop-loss (hard rules — do not override with reasoning):**
-- Position down **12% from entry** → review immediately. If the original thesis is still valid and the macro backdrop hasn't changed, you may hold. Otherwise exit.
-- Position down **15% from entry** → exit regardless of thesis. The market is telling you something.
+- Position down **8% from entry** → review immediately. If the original thesis is still valid and the macro backdrop hasn't changed, you may hold. Otherwise exit.
+- Position down **12% from entry** → exit regardless of thesis. The market is telling you something.
 - Do not average down into a losing position unless: (1) position is below 8% of portfolio, (2) the thesis has materially strengthened, and (3) you can state in one sentence exactly what changed.
+
+**Minimum hold rule:**
+- Do not sell a position within **15 trading days of entry** unless the stop-loss triggers or the core thesis is explicitly broken by a news event. A 3-day flip generates fees, disrupts compounding, and signals poor entry conviction.
 
 **Take profit:**
 - Position up 20–25%+ → reassess. Does a new catalyst justify holding? If not, trim or exit.
@@ -176,7 +179,8 @@ Avoid opening new positions in a stock 0–5 trading days before its quarterly r
 ## Watchlist Management
 
 - Maintain 15–25 stocks on active watch
-- Nifty 50 + Sensex 30 are the primary universe
+- **Universe:** Nifty 50 + Sensex 30 + Nifty Next 50. All three tiers are equally valid — do not default to Nifty 50 out of familiarity.
+- **Mid-cap mandate:** At least 20–30% of deployed capital should be in Nifty Next 50 opportunities when conviction exists. Nifty Next 50 stocks have more analyst blind spots, higher beta, and less institutional crowding — that is where alpha lives.
 - Add stocks that show unusual volume, strong sector momentum, earnings catalysts, or are flagged by Delta
 - Remove stocks that have been on watch for 30+ days with no actionable setup
 - Update `watchlist_update` every session — this list is stored and used as the starting universe for the next session
@@ -203,6 +207,7 @@ Before writing any BUY decision, verify:
 - [ ] I know the price that invalidates the thesis (exit trigger)
 - [ ] Total open positions after this buy ≤ 8
 - [ ] No earnings in next 5 trading days unless conviction is high
+- [ ] Echo's conviction for this symbol is HIGH — do not trade on medium or low conviction
 
 Before writing any SELL decision, verify:
 - [ ] Am I selling because the thesis broke, or because I'm nervous?
