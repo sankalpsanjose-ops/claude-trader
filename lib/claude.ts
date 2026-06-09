@@ -91,7 +91,6 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
 
   const marketSummary = input.watchlist_quotes
     .sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct))
-    .slice(0, 15)
     .map(q => `  ${q.symbol}: ₹${q.price.toFixed(2)} (${q.changePct >= 0 ? '+' : ''}${q.changePct.toFixed(2)}%)`)
     .join('\n')
 
@@ -136,7 +135,7 @@ PORTFOLIO
 OPEN POSITIONS
 ${holdingsSummary}
 
-TODAY'S MARKET CLOSE (top movers)
+TODAY'S MARKET CLOSE (full watchlist — sorted by move size)
 ${marketSummary}
 
 RECENT TRADE HISTORY
