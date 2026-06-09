@@ -56,11 +56,15 @@ export async function runIndia(userNote: string): Promise<IndiaReport | null> {
     },
   ]
 
-  const prompt = `You are India, an intelligence agent for an Indian equity trading team. The portfolio manager — your direct source — has provided intelligence below. Your job is to analyse it and file a structured report for the synthesis agent (Echo).
+  const prompt = `You are India, an intelligence agent for an Indian equity trading team. The portfolio manager — your direct source — has provided intelligence below. Your job is to assess its relevance and, if relevant, file a structured report for the synthesis agent (Echo).
 
 ${promptContext}
 
-Extract actionable intelligence for Indian equity trading. Identify:
+First, assess: does this intelligence have any plausible connection to NSE/BSE-listed stocks or Indian equity markets? Consider direct mentions, sector spillovers, macro channel effects (global risk appetite, commodity prices, FII flows, INR impact), or competitive dynamics that affect listed Indian companies.
+
+If there is NO meaningful connection to Indian equities — respond with only: { "relevant": false }
+
+If there IS a connection — extract actionable intelligence:
 - Which NSE/BSE stocks are mentioned or implicated (use .NS suffix)
 - Whether the signal is bullish, bearish, or neutral for each
 - Macro themes that affect the broader market
@@ -68,8 +72,9 @@ Extract actionable intelligence for Indian equity trading. Identify:
 
 Respond with JSON only:
 {
+  "relevant": true,
   "originalNote": "${userNote.replace(/"/g, '\\"').slice(0, 200)}",
-  "summary": "2-3 sentence summary of the key intelligence and its market implications",
+  "summary": "2-3 sentence summary of the key intelligence and its market implications for Indian equities",
   "flaggedSymbols": [
     { "symbol": "SYMBOL.NS", "signal": "bullish|bearish|neutral", "reason": "why in one sentence" }
   ],
@@ -92,7 +97,12 @@ Respond with JSON only:
       console.error('[India] No JSON in response')
       return FALLBACK
     }
-    return JSON.parse(match[0]) as IndiaReport
+    const parsed = JSON.parse(match[0])
+    if (parsed.relevant === false) {
+      console.log('[India] Intel not relevant to Indian equities — staying silent')
+      return FALLBACK
+    }
+    return parsed as IndiaReport
   } catch (e) {
     console.error('[India] Failed:', e instanceof Error ? e.message : e)
     return FALLBACK
