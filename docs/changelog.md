@@ -4,6 +4,32 @@ Major changes to the trading system, newest first.
 
 ---
 
+## 2026-06-09 — Agent India + Trader Profile Overhaul
+
+### Agent India — you are now the 9th agent
+A new ad-hoc intelligence agent where the portfolio manager is the data source. Submit a URL, search topic, or plain text in the Trail tab before the cron runs. India fetches/searches as needed (URL → native fetch; topic → web search via Anthropic tool), assesses relevance to Indian equities, and files a structured `IndiaReport` for Echo to synthesise alongside Alpha–Delta. If no note is pending, India is completely silent — not wired into the pipeline at all. Echo weights India's report as high-signal ground truth from the decision-maker.
+
+Relevance filter: India first assesses whether the intel has any plausible connection to NSE/BSE stocks (direct or via macro channels like FII flows, sector spillovers, commodity prices). If not relevant, it returns null and stays silent.
+
+New: `user_intel` table (migration `011_user_intel.sql`), `lib/agents/india.ts`, `app/api/intel/route.ts` (GET/POST), `IndiaIntelCard` in Trail tab, India listed as 9th agent in Strategy tab.
+
+### Trader profile — full overhaul (v5)
+The June 1 monthly reflection (v3) had accumulated critical learnings that were accidentally overwritten when manual file edits were synced. v5 is a merge of both: AI-learned rules from v3 + new additions.
+
+Restored from v3: Two-Strike Rule, thesis stops vs price stops distinction, behavioural failure modes ranked by frequency, Journal Protocol, Season 1 and Season 2 history with root causes, sector macro relationships validated from actual trades, "What Worked in Season 2."
+
+New additions: Nifty Next 50 universe mandate (20–30% of deployed capital in mid-caps), 12% hard price stop, HIGH conviction filter (Echo must flag HIGH before any BUY is queued), Trading Universe section.
+
+### Foxtrot now sees all 70 watchlist stocks
+The market close section in Foxtrot's prompt was capped at 15 stocks — 55 stocks (including all Nifty Next 50) were invisible on most days. Removed the cap. Foxtrot now sees the full watchlist sorted by % move on every session.
+
+### Trader profile DB sync endpoint
+`POST /api/admin/sync-profile` (auth: CRON_SECRET) reads `docs/trader-profile.md` and inserts it as the latest versioned row in the `trader_profile` table. Required because the cron reads from DB (not file) — manual file edits are invisible without this sync. Run after any edit to `docs/trader-profile.md`.
+
+Requires migration: `011_user_intel.sql` (run in Supabase SQL editor).
+
+---
+
 ## 2026-05-12 — Agent Intelligence Upgrade
 
 ### Charlie: persistent macro memory + Sonnet upgrade
