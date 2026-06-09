@@ -1,14 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { DailyAnalysis } from '@/types'
-import type { AlphaReport, BravoReport, CharlieReport, DeltaReport, EchoReport, TechnicalSignal } from '@/lib/agents/types'
+import type { AlphaReport, BravoReport, CharlieReport, DeltaReport, EchoReport, IndiaReport, TechnicalSignal } from '@/lib/agents/types'
 
 interface Props {
   analyses: DailyAnalysis[]
 }
 
-function AgentTag({ agent }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 'echo' | 'foxtrot' }) {
+function AgentTag({ agent }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 'echo' | 'foxtrot' | 'india' }) {
   const styles: Record<string, string> = {
     alpha:   'text-[#79c0ff] border-[#79c0ff40] bg-[#79c0ff0d]',
     bravo:   'text-[#a5d6ff] border-[#a5d6ff40] bg-[#a5d6ff0d]',
@@ -16,14 +16,15 @@ function AgentTag({ agent }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 
     delta:   'text-[#d2a8ff] border-[#d2a8ff40] bg-[#d2a8ff0d]',
     echo:    'text-[#56d364] border-[#56d36440] bg-[#56d3640d]',
     foxtrot: 'text-[#ffa657] border-[#ffa65740] bg-[#ffa6570d]',
+    india:   'text-[#3fb950] border-[#3fb95040] bg-[#3fb9500d]',
   }
   const labels: Record<string, string> = {
     alpha: 'Alpha', bravo: 'Bravo', charlie: 'Charlie',
-    delta: 'Delta', echo: 'Echo', foxtrot: 'Foxtrot',
+    delta: 'Delta', echo: 'Echo', foxtrot: 'Foxtrot', india: 'India',
   }
   const roles: Record<string, string> = {
     alpha: 'Market data', bravo: 'Technicals', charlie: 'News & macro',
-    delta: 'Fundamentals', echo: 'Synthesis', foxtrot: 'Decision',
+    delta: 'Fundamentals', echo: 'Synthesis', foxtrot: 'Decision', india: 'Your intel',
   }
   return (
     <div className="flex flex-col gap-1 min-w-[88px]">
@@ -35,7 +36,7 @@ function AgentTag({ agent }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 
   )
 }
 
-function AgentRow({ agent, children }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 'echo' | 'foxtrot'; children: React.ReactNode }) {
+function AgentRow({ agent, children }: { agent: 'alpha' | 'bravo' | 'charlie' | 'delta' | 'echo' | 'foxtrot' | 'india'; children: React.ReactNode }) {
   return (
     <div className="flex gap-3 py-3 border-b border-[#21262d] last:border-0 last:pb-0 items-start">
       <AgentTag agent={agent} />
@@ -62,6 +63,94 @@ function formatBravo(signal: TechnicalSignal, symbol: string): string {
       : ` · vol ${signal.volumeRatio.toFixed(1)}× avg`
     : ''
   return `${symbol}: RSI ${signal.rsi14} (${rsiNote}), currently ${smaStatus}. 10-day price shows ${mom}. Current price ₹${signal.currentPrice.toFixed(2)}.${volNote}`
+}
+
+function IndiaIntelCard() {
+  const [note, setNote] = useState('')
+  const [pending, setPending] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/intel').then(r => r.json()).then(d => setPending(d.note ?? null)).catch(() => {})
+  }, [])
+
+  async function submit() {
+    if (!note.trim()) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/intel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: note.trim() }),
+      })
+      if (res.ok) {
+        setPending(note.trim())
+        setNote('')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden mb-3">
+      <div className="px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-[#e6edf3] text-sm">India — Your Intel</span>
+          {pending ? (
+            <span className="text-[10px] bg-[#1a3a2a] text-[#3fb950] border border-[#3fb95040] px-2 py-0.5 rounded font-semibold">
+              Active · runs at next cron
+            </span>
+          ) : (
+            <span className="text-[10px] bg-[#21262d] text-[#8b949e] border border-[#30363d] px-2 py-0.5 rounded">
+              Silent · no note pending
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="border-t border-[#30363d] px-4 py-3">
+        {pending ? (
+          <div className="space-y-2">
+            <p className="text-[12px] text-[#8b949e]">Pending note (will be consumed by next cron):</p>
+            <pre className="text-[12px] text-[#c9d1d9] whitespace-pre-wrap font-sans bg-[#1c2128] rounded p-3 border border-[#30363d]">
+              {pending}
+            </pre>
+            <button
+              onClick={async () => {
+                await fetch('/api/intel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note: '' }) }).catch(() => {})
+                setPending(null)
+              }}
+              className="text-[11px] text-[#f85149] hover:underline"
+            >
+              Clear note
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-[11px] text-[#484f58]">Submit a URL, search topic, or plain text. India will research it and file a report for Echo to synthesise.</p>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              maxLength={1000}
+              rows={3}
+              placeholder="e.g. RBI likely to cut rates this week · https://example.com/article · IRCTC had a major outage today"
+              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-[13px] text-[#c9d1d9] placeholder-[#484f58] resize-none focus:outline-none focus:border-[#3fb950]"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-[#484f58]">{note.length}/1000</span>
+              <button
+                onClick={submit}
+                disabled={loading || !note.trim()}
+                className="text-[12px] bg-[#1a3a2a] text-[#3fb950] border border-[#3fb95040] px-3 py-1 rounded hover:bg-[#1f4a33] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Submitting…' : 'Submit to India'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function MacroMemoryCard({ content }: { content: string }) {
@@ -92,7 +181,7 @@ function MacroMemoryCard({ content }: { content: string }) {
   )
 }
 
-function DailyBrief({ alpha, charlie, echo }: { alpha: AlphaReport; charlie: CharlieReport; echo: EchoReport }) {
+function DailyBrief({ alpha, charlie, echo, india }: { alpha: AlphaReport; charlie: CharlieReport; echo: EchoReport; india?: IndiaReport }) {
   const [open, setOpen] = useState(true)
   return (
     <div>
@@ -181,6 +270,29 @@ function DailyBrief({ alpha, charlie, echo }: { alpha: AlphaReport; charlie: Cha
               )}
             </div>
           </AgentRow>
+          {india && (
+            <AgentRow agent="india">
+              <div className="space-y-1">
+                <div>{india.summary}</div>
+                {india.flaggedSymbols.length > 0 && (
+                  <div className="text-[12px] flex flex-wrap gap-x-3">
+                    {india.flaggedSymbols.map(s => (
+                      <span key={s.symbol}>
+                        <span className="text-[#e6edf3] font-medium font-mono">{s.symbol}</span>{' '}
+                        <span className={s.signal === 'bullish' ? 'text-[#3fb950]' : s.signal === 'bearish' ? 'text-[#f85149]' : 'text-[#8b949e]'}>
+                          {s.signal}
+                        </span>
+                        {' — '}{s.reason}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {india.macroNotes.length > 0 && (
+                  <div className="text-[12px] text-[#8b949e]">{india.macroNotes.join(' · ')}</div>
+                )}
+              </div>
+            </AgentRow>
+          )}
           <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#1c2128] rounded border border-dashed border-[#30363d]">
             <span className="text-[#484f58] text-xs">↓</span>
             <span className="text-[11px] text-[#484f58]">
@@ -309,6 +421,9 @@ export function DecisionTrailTab({ analyses }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* India intel input */}
+      <IndiaIntelCard />
+
       {/* Agent directory */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
         <div className="text-[11px] uppercase tracking-wider font-semibold text-[#8b949e] mb-3">
@@ -340,7 +455,7 @@ export function DecisionTrailTab({ analyses }: Props) {
       </div>
 
       {/* Daily brief */}
-      <DailyBrief alpha={reports.alpha} charlie={reports.charlie} echo={reports.echo} />
+      <DailyBrief alpha={reports.alpha} charlie={reports.charlie} echo={reports.echo} india={reports.india} />
 
       {/* Per-symbol decisions */}
       {selected.decisions.length > 0 && (

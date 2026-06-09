@@ -50,10 +50,19 @@ export interface EchoReport {
   topRisks: string[]
 }
 
+export interface IndiaReport {
+  originalNote: string
+  summary: string
+  flaggedSymbols: { symbol: string; signal: 'bullish' | 'bearish' | 'neutral'; reason: string }[]
+  macroNotes: string[]
+  sentiment: 'bullish' | 'bearish' | 'neutral' | 'mixed'
+}
+
 export interface AgentReports {
   alpha: AlphaReport
   bravo: BravoReport
   charlie: CharlieReport
   delta: DeltaReport
   echo: EchoReport
+  india?: IndiaReport
 }

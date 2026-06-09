@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { AlphaReport, BravoReport, CharlieReport, DeltaReport, EchoReport } from './types'
+import type { AlphaReport, BravoReport, CharlieReport, DeltaReport, EchoReport, IndiaReport } from './types'
 
 const anthropic = new Anthropic()
 
@@ -40,6 +40,18 @@ function fmtCharlie(r: CharlieReport): string {
   return lines.join('\n')
 }
 
+function fmtIndia(r: IndiaReport): string {
+  const lines = [`PORTFOLIO MANAGER INTEL (India): overall=${r.sentiment}`]
+  lines.push(`  Summary: ${r.summary}`)
+  if (r.flaggedSymbols.length) {
+    for (const s of r.flaggedSymbols) {
+      lines.push(`  ${s.symbol}: ${s.signal} — ${s.reason}`)
+    }
+  }
+  if (r.macroNotes.length) lines.push('  Macro: ' + r.macroNotes.join('; '))
+  return lines.join('\n')
+}
+
 function fmtDelta(r: DeltaReport): string {
   const lines = ['FUNDAMENTAL RESEARCH (Delta):']
   for (const [s, v] of Object.entries(r.perSymbol)) {
@@ -63,18 +75,22 @@ export async function runEcho(
   charlie: CharlieReport,
   delta: DeltaReport,
   macroMemory: string,
+  india?: IndiaReport,
 ): Promise<EchoReport> {
-  const context = [fmtAlpha(alpha), fmtBravo(bravo), fmtCharlie(charlie), fmtDelta(delta)].join('\n\n')
+  const parts = [fmtAlpha(alpha), fmtBravo(bravo), fmtCharlie(charlie), fmtDelta(delta)]
+  if (india) parts.push(fmtIndia(india))
+  const context = parts.join('\n\n')
 
   const macroMemorySection = macroMemory.trim()
     ? `CHARLIE'S MACRO INTELLIGENCE DOCUMENT (built from news across sessions):\n${macroMemory}\n\n`
     : ''
 
-  const prompt = `You are Echo, the Supervisor for an Indian equity trading team. Four specialist agents have filed their reports below.
+  const agentCount = india ? 'Five' : 'Four'
+  const prompt = `You are Echo, the Supervisor for an Indian equity trading team. ${agentCount} specialist agents have filed their reports below.
 
 ${macroMemorySection}${context}
 
-Synthesise their findings for the Portfolio Manager. For each stock, identify where specialists agree (high conviction) vs. conflict (e.g. RSI overbought but analyst says strong buy). Note macro amplifiers from the macro intelligence document and today's Alpha data.
+Synthesise their findings for the Portfolio Manager. For each stock, identify where specialists agree (high conviction) vs. conflict (e.g. RSI overbought but analyst says strong buy). Note macro amplifiers from the macro intelligence document and today's Alpha data. If India (portfolio manager intel) is present, treat it as high-signal ground truth from the decision-maker — weight it heavily when it conflicts with other agents.
 
 Respond with JSON only — no prose outside the JSON:
 {

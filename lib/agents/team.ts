@@ -6,6 +6,7 @@ import { runBravo } from './bravo'
 import { runCharlie } from './charlie'
 import { runDelta } from './delta'
 import { runEcho } from './echo'
+import { runIndia } from './india'
 import type { AlphaReport, EchoReport, AgentReports } from './types'
 
 async function readMacroMemory(): Promise<string> {
@@ -21,6 +22,23 @@ async function writeMacroMemory(content: string): Promise<void> {
   await supabaseAdmin
     .from('macro_context')
     .upsert({ id: 1, content, updated_at: new Date().toISOString() })
+}
+
+async function readUserIntel(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from('user_intel')
+    .select('note')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return data?.note ?? null
+}
+
+async function deleteUserIntel(): Promise<void> {
+  await supabaseAdmin
+    .from('user_intel')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
 }
 
 function buildTeamContext(echo: EchoReport, alpha: AlphaReport): string {
@@ -87,18 +105,23 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
   // Delta: held positions first (always review), then top movers — cap at 20
   const deltaSymbols = [...new Set([...heldSymbols, ...topMovers.map(q => q.symbol)])].slice(0, 20)
 
-  // Read macro memory before running agents
-  const existingMacroMemory = await readMacroMemory()
+  // Read macro memory and any pending user intel before running agents
+  const [existingMacroMemory, userNote] = await Promise.all([
+    readMacroMemory(),
+    readUserIntel(),
+  ])
 
-  // Phase 1: all 4 specialists in parallel
+  // Phase 1: all specialists in parallel
   // Bravo runs on full watchlist (pure math, no LLM)
   // Delta runs on held + top 20 movers
   // Charlie receives macro memory and updates it
-  const [alphaReport, bravoReport, charlieReport, deltaReport] = await Promise.all([
+  // India runs only when user has submitted a note
+  const [alphaReport, bravoReport, charlieReport, deltaReport, indiaReport] = await Promise.all([
     runAlpha(),
     runBravo(allSymbols),
     runCharlie(topMovers.slice(0, 10), heldSymbols, existingMacroMemory),
     runDelta(deltaSymbols),
+    userNote ? runIndia(userNote) : Promise.resolve(null),
   ])
 
   // Persist updated macro memory (fire and forget — never block the pipeline)
@@ -108,8 +131,19 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
     )
   }
 
-  // Phase 2: Echo synthesises with macro memory context
-  const echoReport = await runEcho(alphaReport, bravoReport, charlieReport, deltaReport, charlieReport.macroMemory)
+  // Consume user intel — delete after session (fire and forget)
+  if (userNote) {
+    deleteUserIntel().catch(e =>
+      console.error('[team] Failed to delete user intel:', e)
+    )
+  }
+
+  // Phase 2: Echo synthesises — India included only when it ran
+  const echoReport = await runEcho(
+    alphaReport, bravoReport, charlieReport, deltaReport,
+    charlieReport.macroMemory,
+    indiaReport ?? undefined,
+  )
 
   // Phase 3: Foxtrot decides
   const teamContext = buildTeamContext(echoReport, alphaReport)
@@ -121,6 +155,7 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
     charlie: charlieReport,
     delta: deltaReport,
     echo: echoReport,
+    ...(indiaReport ? { india: indiaReport } : {}),
   }
   return { ...result, team_brief: teamContext, agent_reports }
 }

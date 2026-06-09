@@ -82,6 +82,14 @@ const AGENTS: AgentDef[] = [
     description: 'Cross-checks every trade decision against real Yahoo Finance prices to flag hallucinated reasoning or logic that contradicts actual market data.',
     alwaysActive: true,
   },
+  {
+    callsign: 'INDIA',
+    role: 'Ad-hoc Intel',
+    type: 'Human + Web',
+    typeColour: 'bg-[#1a3a2a] text-[#3fb950]',
+    description: 'You are the source. Submit a URL, search topic, or plain text in the Trail tab before the cron runs. India fetches, searches if needed, and files a report for Echo to synthesise. Silent when no note is pending.',
+    alwaysActive: false,
+  },
 ]
 
 const CATEGORY_COLOURS: Record<string, string> = {
