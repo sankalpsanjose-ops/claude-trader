@@ -55,7 +55,7 @@ const AGENTS: AgentDef[] = [
     role: 'Supervisor',
     type: 'Sonnet',
     typeColour: 'bg-[#2d1a3a] text-[#d2a8ff]',
-    description: 'Synthesises Alpha–Delta reports alongside Charlie\'s macro memory document, identifies where specialists agree or conflict, and produces the intelligence brief for the Portfolio Manager.',
+    description: 'Synthesises Alpha–Delta and India reports (India when present) alongside Charlie\'s macro memory document, identifies where specialists agree or conflict, and produces the intelligence brief for the Portfolio Manager.',
     alwaysActive: false,
   },
   {
