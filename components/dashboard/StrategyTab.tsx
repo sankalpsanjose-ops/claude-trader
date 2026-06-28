@@ -258,7 +258,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
           <div>
             <div className="font-semibold text-[#e6edf3]">Trading Intelligence System</div>
             <div className="text-xs text-[#8b949e] mt-0.5">
-              8 agents · 3 always active · 5 additional in team mode
+              9 agents · 3 always active · 6 additional in team mode
             </div>
           </div>
           <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide shrink-0 ${
@@ -314,8 +314,9 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
                 {['ALPHA', 'BRAVO', 'CHARLIE', 'DELTA'].map(c => (
                   <div key={c} className="text-[11px] font-mono font-bold text-[#e6edf3] bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded text-center tracking-widest">{c}</div>
                 ))}
+                <div className="text-[11px] font-mono font-bold text-[#3fb950] bg-[#1a3a2a] border border-[#3fb95040] px-2.5 py-1 rounded text-center tracking-widest">INDIA</div>
               </div>
-              <div className="text-[10px] text-[#484f58] mt-1 text-center">run in parallel</div>
+              <div className="text-[10px] text-[#484f58] mt-1 text-center">run in parallel<br/><span className="text-[#3fb950]">India: if note pending</span></div>
             </div>
 
             {/* Arrow */}
@@ -406,7 +407,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         </div>
         <div className="p-4 space-y-3">
           <p className="text-sm text-[#8b949e] leading-relaxed">
-            KingPin is the team&apos;s communications agent — it speaks as &ldquo;we&rdquo; for all eight specialists. It has full memory of every trade, daily analysis, market summary, geopolitical read, and learning since Season 2 began.
+            KingPin is the team&apos;s communications agent — it speaks as &ldquo;we&rdquo; for all nine specialists. It has full memory of every trade, daily analysis, market summary, geopolitical read, and learning since Season 2 began.
           </p>
           <p className="text-sm text-[#8b949e] leading-relaxed">
             Ask it anything the team has seen or decided. It won&apos;t name individual agents or throw anyone under the bus — it presents the team&apos;s reasoning as one coherent voice. If the team saw a signal but didn&apos;t act, KingPin explains the tradeoff. If the risk review pushed back on a trade, KingPin owns it collectively.
