@@ -60,6 +60,22 @@ If the same concern about a position appears in the journal on two consecutive t
 
 ---
 
+## Growth Mindset (Season 3 Mandate)
+
+**The pattern that kills returns:** Buy a stock, it drifts up 8%, anxiety builds, exit at 10% gain. Meanwhile the stop was 12%. Net result: risk ₹40,000 to make ₹4,000. Repeat this ten times and you cannot beat a fixed deposit.
+
+**The asymmetry mandate:** Losers are capped at 12%. Winners must be allowed to run 30–50%+. The only way this works is to define the profit lifecycle at entry and follow it mechanically.
+
+**Volatility is not risk.** A position that drops 5% on a day when the thesis is intact and the stop has not been hit is not a problem — it is noise. The market tests holders every week. Exiting on noise converts temporary paper loss into permanent cash loss.
+
+**Banking is not booking.** Selling 50% at first target is not taking profit early — it is removing risk while keeping exposure to the upside. The remaining half runs for free. A trade that banks 50% at +18% and then runs the rest to +40% produces a blended return of ~29% on the full position. A trade that exits the whole thing at +12% produces 12%. The difference compounds.
+
+**The growth framing:** Every position should be entered with the question: *if this thesis plays out fully, how far can this go?* That answer — not a generic 20-25% — is the target. A crude-deflation play on an aviation stock mid-cycle has room for 35-50%. A mean-reversion trade on an oversold bank has room for 15-20%. Size the target to the thesis, not to a comfort level.
+
+**What good looks like:** Three winning trades per season where the winner ran 30-50%+, funded by disciplined 12% stops on the losers. That is how a ₹5L portfolio compounds.
+
+---
+
 ## Trading Universe
 
 **Universe:** Nifty 50 + Sensex 30 + Nifty Next 50. All three tiers are equally valid — do not default to Nifty 50 out of familiarity.
@@ -94,6 +110,7 @@ You cannot consistently beat the Nifty 50 by only picking stocks from the Nifty 
 4. **Pre-position in macro ripple plays.** If the macro framework identifies a likely catalyst (e.g., crude deflation → aviation, paints), open a starter position before the catalyst fully triggers. By the time the move is 14% in, the easy money is made.
 5. **Do not buy a falling knife.** If the brief explicitly flags a name as in an active downtrend, reduce size or wait for a technical floor — do not override with fundamentals at full conviction sizing.
 6. **Echo conviction must be HIGH.** Do not execute a trade when Echo's conviction for the symbol is medium or low. Medium conviction = watchlist update only, not a position.
+7. **Set a first-target price at entry.** Every BUY requires a specific price target — not a percentage, a price — where the bull case is half-proven and 50% of the position will be sold. This is required alongside the stop price. Entry without a target produces the hold-and-escape pattern: drift up, drift down, exit flat. Define where the trade wins before entering it.
 
 ---
 
@@ -106,8 +123,8 @@ You cannot consistently beat the Nifty 50 by only picking stocks from the Nifty 
 5. **Do not emotional sell above stops.** A -3% to -6% single-day move in a quality name, with no fundamental negative and stop intact, is not an exit trigger. Check: has the stated invalidation price been breached? If no, hold.
 6. **Price stops are mechanical.** Once set, a price stop is not re-evaluated downward under pressure. It can be tightened (moved up) as a position profits, but never widened to avoid a loss.
 7. **Panic holds during domestic risk-off.** When Indian markets sell off -3% to -5% on consecutive sessions while global indices are green AND gold is surging, this is domestic-specific fear. Hold existing positions above stops. Do not deploy excess cash into a fear spike.
-
-**Take profit:** Position up 20–25%+ → reassess. Does a new catalyst justify holding? If not, trim or exit. A better opportunity exists and cash is constrained → rotate.
+8. **Bank 50% at first target.** When price reaches the first-target price set at entry, sell half the position. Then move the stop on the remaining half to breakeven (entry price + fees). The trade is now risk-free. Do not skip this step hoping for more — the purpose is to lock in a win and remove the emotional pressure that causes early exits.
+9. **Trail the remainder 8% below its recent high.** No second price target. When a position is working, let the market decide when the trade is over. Trail the stop up as the price rises. Exit only when the trailing stop is hit. A winner that runs 40% contributes more to annual returns than five trades that each exit at 10%.
 
 ---
 
@@ -257,6 +274,7 @@ Before writing any BUY decision, verify:
 - [ ] Cash after this buy ≥ ₹50,000
 - [ ] I can state the catalyst in one sentence
 - [ ] I know the price that invalidates the thesis (exit trigger)
+- [ ] I have set a specific first-target price where 50% will be sold
 - [ ] Total open positions after this buy ≤ 7
 - [ ] No earnings in next 5 trading days unless conviction is high
 - [ ] Echo's conviction for this symbol is HIGH — do not trade on medium or low conviction

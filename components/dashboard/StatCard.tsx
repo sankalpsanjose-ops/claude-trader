@@ -13,8 +13,14 @@ export function StatCard({ label, value, sub, subPositive, subNegative }: StatCa
     ? 'text-[#f85149]'
     : 'text-[#8b949e]'
 
+  const accentBorder = subPositive
+    ? 'border-l-[#3fb950]'
+    : subNegative
+    ? 'border-l-[#f85149]'
+    : 'border-l-[#30363d]'
+
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+    <div className={`bg-[#161b22] border border-[#30363d] border-l-4 ${accentBorder} rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]`}>
       <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-1.5">
         {label}
       </div>

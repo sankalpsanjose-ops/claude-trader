@@ -61,14 +61,14 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
 
       {/* Row 2: sector chart + performance chart */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
           <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-4">
             Sector Allocation
           </div>
           <SectorChart data={data.sector_allocation} />
         </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold">
               vs Nifty 50
@@ -82,7 +82,7 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
       </div>
 
       {/* Row 3: raw Nifty index chart */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
         <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
           Nifty 50 Index
         </div>

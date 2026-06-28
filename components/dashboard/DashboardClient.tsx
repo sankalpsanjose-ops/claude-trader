@@ -50,7 +50,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
   return (
     <div className="min-h-screen bg-[#0d1117]">
       {/* Top bar */}
-      <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6 py-4 flex items-center justify-between">
+      <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6 py-4 flex items-center justify-between shadow-[0_2px_16px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
           <div className="rounded-2xl overflow-hidden shadow-[0_2px_16px_rgba(56,189,248,0.18),0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
             <Image src="/logo.png" alt="Claude Trader" width={200} height={54} className="h-9 md:h-12 w-auto block" priority />
@@ -84,7 +84,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
               <TabsTrigger
                 key={t}
                 value={t}
-                className="capitalize rounded-none border-b-2 border-transparent px-4 py-3 text-[13px] font-medium text-[#8b949e] data-[state=active]:text-[#58a6ff] data-[state=active]:border-[#58a6ff] data-[state=active]:bg-transparent hover:text-[#e6edf3] transition-colors"
+                className="capitalize rounded-none border-b-[3px] border-transparent px-4 py-3 text-[13px] font-medium text-[#8b949e] data-[state=active]:text-[#79c0ff] data-[state=active]:border-[#58a6ff] data-[state=active]:bg-transparent hover:text-[#e6edf3] transition-colors"
               >
                 {t}
               </TabsTrigger>

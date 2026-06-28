@@ -22,7 +22,7 @@ export function HoldingsTab({ holdings }: Props) {
   }
 
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d]">
         <div className="font-semibold text-[#e6edf3]">Current Holdings</div>
         <div className="flex items-center gap-3">
