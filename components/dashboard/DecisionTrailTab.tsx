@@ -127,7 +127,7 @@ function IndiaIntelCard() {
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-[11px] text-[#5a5f65]">Submit a URL, search topic, or plain text. India will research it and file a report for Echo to synthesise.</p>
+            <p className="text-[11px] text-[#7a7f88]">Submit a URL, search topic, or plain text. India will research it and file a report for Echo to synthesise.</p>
             <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
@@ -168,7 +168,7 @@ function MacroMemoryCard({ content }: { content: string }) {
             Self-updating · persists across sessions
           </span>
         </div>
-        <span className="text-[#5a5f65] text-xs">{open ? '▲ collapse' : '▼ expand'}</span>
+        <span className="text-[#7a7f88] text-xs">{open ? '▲ collapse' : '▼ expand'}</span>
       </button>
       {open && (
         <div className="border-t border-[#1f242c] px-4 py-4">
@@ -197,7 +197,7 @@ function DailyBrief({ alpha, charlie, echo, india }: { alpha: AlphaReport; charl
             Alpha · Charlie · Echo
           </span>
         </div>
-        <span className="text-[#5a5f65] text-xs">{open ? '▲ collapse' : '▼ expand'}</span>
+        <span className="text-[#7a7f88] text-xs">{open ? '▲ collapse' : '▼ expand'}</span>
       </button>
       {open && (
         <div className="border-t border-[#1f242c] px-4 py-3">
@@ -295,7 +295,7 @@ function DailyBrief({ alpha, charlie, echo, india }: { alpha: AlphaReport; charl
           )}
           <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#181a1e] rounded border border-dashed border-[#1f242c]">
             <span className="text-[#5a5f65] text-xs">↓</span>
-            <span className="text-[11px] text-[#5a5f65]">
+            <span className="text-[11px] text-[#7a7f88]">
               <span className="text-[#a5d6ff] font-semibold">Bravo</span> (technicals) and{' '}
               <span className="text-[#d2a8ff] font-semibold">Delta</span> (fundamentals) work stock-by-stock — see each position below.
             </span>
@@ -346,7 +346,7 @@ function SymbolSection({ symbol, action, quantity, foxtrotRationale, bravo, char
           {quantity && <span className="text-[12px] text-[#7a7f88]">{quantity} shares</span>}
         </div>
         <div className="flex items-center gap-2">
-          {hasAgentData && <span className="text-[11px] text-[#5a5f65]">click to read agent reports</span>}
+          {hasAgentData && <span className="text-[11px] text-[#7a7f88]">click to read agent reports</span>}
           <span className="text-[#5a5f65] text-xs">{open ? '▲' : '▼'}</span>
         </div>
       </button>
@@ -407,7 +407,7 @@ export function DecisionTrailTab({ analyses }: Props) {
     return (
       <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center space-y-2">
         <div className="text-[#f4f2ec] font-semibold">No decision trail yet</div>
-        <div className="text-[#5a5f65] text-sm max-w-md mx-auto">
+        <div className="text-[#7a7f88] text-sm max-w-md mx-auto">
           Decision trails are recorded when the trading team runs. Make sure{' '}
           <code className="text-[#d4af6a] bg-[#161819] px-1 rounded text-xs">USE_TRADING_TEAM=true</code>{' '}
           is set, then run the analysis cron. Agent reports will appear here from the next run forward.

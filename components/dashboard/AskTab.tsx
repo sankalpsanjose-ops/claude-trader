@@ -84,7 +84,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
             <div className="text-[10px] text-[#7a7f88]">{usingTradingTeam ? 'Voice of the 8-agent team' : 'Voice of the trading system (solo mode)'}</div>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-[#5a5f65]">
+        <div className="flex items-center gap-1.5 text-[11px] text-[#7a7f88]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] shrink-0" />
           Grounded in actual trading data
         </div>

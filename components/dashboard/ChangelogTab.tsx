@@ -7,7 +7,7 @@ interface Props {
 export function ChangelogTab({ profiles }: Props) {
   if (profiles.length === 0) {
     return (
-      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#5a5f65] text-sm">
+      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#7a7f88] text-sm">
         Profile history will appear here after the first monthly reflection runs.
       </div>
     )

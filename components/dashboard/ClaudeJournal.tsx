@@ -31,7 +31,7 @@ export function ClaudeJournal({ analysis }: Props) {
         <div className="text-[11px] uppercase tracking-[0.1em] text-[#d4af6a] font-semibold">
           Claude&apos;s Market View
         </div>
-        <div className="text-[11px] text-[#5a5f65]">{date}</div>
+        <div className="text-[11px] text-[#7a7f88]">{date}</div>
       </div>
 
       <div className="space-y-3">
@@ -49,7 +49,7 @@ export function ClaudeJournal({ analysis }: Props) {
         </button>
       )}
 
-      <div className="mt-4 pt-3 border-t border-[#161819] text-[12px] text-[#5a5f65] italic">
+      <div className="mt-4 pt-3 border-t border-[#161819] text-[12px] text-[#7a7f88] italic">
         {analysis.market_summary}
       </div>
     </div>

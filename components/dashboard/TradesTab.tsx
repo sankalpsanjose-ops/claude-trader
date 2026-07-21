@@ -25,7 +25,7 @@ function deriveTradeMath(t: Trade) {
 export function TradesTab({ trades }: Props) {
   if (trades.length === 0) {
     return (
-      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#5a5f65] text-sm">
+      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#7a7f88] text-sm">
         No trades yet — Claude will place its first orders tonight.
       </div>
     )

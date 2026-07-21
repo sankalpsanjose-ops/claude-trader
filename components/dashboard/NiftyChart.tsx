@@ -15,7 +15,7 @@ function formatDate(dateStr: string) {
 export function NiftyChart({ data }: Props) {
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center h-20 text-sm text-[#5a5f65]">
+      <div className="flex items-center justify-center h-20 text-sm text-[#7a7f88]">
         Nifty data will appear after the first trading day
       </div>
     )

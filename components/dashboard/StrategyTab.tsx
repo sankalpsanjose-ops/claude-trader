@@ -257,7 +257,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
           </div>
         </div>
         <div className="text-right shrink-0 ml-4">
-          <div className="text-[11px] text-[#5a5f65]">
+          <div className="text-[11px] text-[#7a7f88]">
             v{version} · Updated {new Date(lastUpdated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
           </div>
           {version > 1 && (
@@ -297,7 +297,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
                   </span>
                 </div>
                 <div className="text-[11px] text-[#d4af6a] font-semibold mb-2">{agent.role}</div>
-                <p className="text-[11px] text-[#5a5f65] leading-relaxed">{agent.description}</p>
+                <p className="text-[11px] text-[#7a7f88] leading-relaxed">{agent.description}</p>
                 <div className={`mt-3 text-[10px] font-semibold ${
                   agent.alwaysActive ? 'text-[#3fb950]' : isActive ? 'text-[#3fb950]' : 'text-[#5a5f65]'
                 }`}>
@@ -476,7 +476,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
           <div className="divide-y divide-[#161819]">
             {monthlyReflections.map(r => (
               <div key={r.id} className="px-4 py-4">
-                <div className="text-[11px] text-[#5a5f65] font-mono mb-2">
+                <div className="text-[11px] text-[#7a7f88] font-mono mb-2">
                   {new Date(r.date).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
                 </div>
                 <p className="text-sm text-[#7a7f88] leading-relaxed whitespace-pre-line">{r.insight}</p>
@@ -499,7 +499,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
           <div className="divide-y divide-[#161819]">
             {dailyLearnings.map(l => (
               <div key={l.id} className="px-4 py-3 flex items-start gap-3">
-                <div className="text-[11px] text-[#5a5f65] font-mono whitespace-nowrap mt-0.5 w-20 shrink-0">
+                <div className="text-[11px] text-[#7a7f88] font-mono whitespace-nowrap mt-0.5 w-20 shrink-0">
                   {new Date(l.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                 </div>
                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${CATEGORY_COLOURS[l.category] ?? CATEGORY_COLOURS.process}`}>
@@ -514,7 +514,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
 
       {/* No learnings yet */}
       {dailyLearnings.length === 0 && monthlyReflections.length === 0 && (
-        <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-6 text-center text-[#5a5f65] text-sm">
+        <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-6 text-center text-[#7a7f88] text-sm">
           Learnings log will populate after the first live trading day.
         </div>
       )}
@@ -545,7 +545,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
           Active Trading Profile
         </div>
         {parsed ? parsed.elements : (
-          <p className="text-sm text-[#5a5f65]">Profile not loaded.</p>
+          <p className="text-sm text-[#7a7f88]">Profile not loaded.</p>
         )}
       </div>
     </div>

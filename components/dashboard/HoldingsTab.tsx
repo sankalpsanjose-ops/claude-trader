@@ -15,7 +15,7 @@ interface Props {
 export function HoldingsTab({ holdings }: Props) {
   if (holdings.length === 0) {
     return (
-      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#5a5f65] text-sm">
+      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#7a7f88] text-sm">
         No open positions yet — Claude will make its first trades after market close today.
       </div>
     )
@@ -26,7 +26,7 @@ export function HoldingsTab({ holdings }: Props) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#1f242c]">
         <div className="font-semibold text-[#f4f2ec]">Current Holdings</div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-[#5a5f65]">Prices via Yahoo Finance · updated on page load</span>
+          <span className="text-[11px] text-[#7a7f88]">Prices via Yahoo Finance · updated on page load</span>
           <span className="text-sm text-[#7a7f88]">{holdings.length} positions</span>
         </div>
       </div>

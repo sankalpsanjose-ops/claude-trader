@@ -159,7 +159,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       </Tabs>
 
       {/* Footer */}
-      <div className="px-4 md:px-6 pb-6 text-center text-[11px] text-[#5a5f65]">
+      <div className="px-4 md:px-6 pb-6 text-center text-[11px] text-[#7a7f88]">
         Claude Trader · ₹{startingCapital.toLocaleString('en-IN')} starting capital · NSE &amp; BSE · No real money involved
       </div>
     </div>

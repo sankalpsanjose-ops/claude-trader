@@ -22,7 +22,7 @@ function formatINR(value: number) {
 export function PerformanceChart({ data, benchmark = [], liveStartDate, startingCapital }: Props) {
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center h-24 text-sm text-[#5a5f65]">
+      <div className="flex items-center justify-center h-24 text-sm text-[#7a7f88]">
         Chart will appear after a few trading days
       </div>
     )
