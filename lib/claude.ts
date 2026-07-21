@@ -164,13 +164,16 @@ Based on this, decide what to do. Respond with JSON matching this exact schema:
 }`
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
+    model: 'claude-sonnet-5',
+    max_tokens: 12000,
     system: buildSystemPrompt(profile),
     messages: [{ role: 'user', content: userMessage }],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  // Sonnet 5 runs adaptive thinking by default, so content[0] may be a
+  // thinking block — take the last text block instead.
+  const textBlocks = message.content.filter(b => b.type === 'text')
+  const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Claude did not return valid JSON')
 
@@ -191,8 +194,8 @@ export async function reviseFoxtrotDecisions(
   if (!decisionsSummary) return decisions
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
+    model: 'claude-sonnet-5',
+    max_tokens: 4096,
     system: buildSystemPrompt(profile),
     messages: [{
       role: 'user',
@@ -222,7 +225,8 @@ Include all original decisions (revised or unchanged). HOLD decisions can be omi
     }],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const textBlocks = message.content.filter(b => b.type === 'text')
+  const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
   const match = text.match(/\[[\s\S]*\]/)
   if (!match) return decisions
   try {

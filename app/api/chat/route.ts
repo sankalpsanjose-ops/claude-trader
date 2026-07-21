@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
 
   // Haiku topic gate
   const gateMsg = await ai.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 10,
     messages: [{ role: 'user', content: buildGatePrompt(trimmed) }],
   })
@@ -200,13 +200,17 @@ export async function POST(req: NextRequest) {
   const context = await fetchRagContext()
 
   const response = await ai.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
+    model: 'claude-sonnet-5',
+    max_tokens: 2048,
     system: KINGPIN_SYSTEM,
     messages: [{ role: 'user', content: `${context}\n\nQuestion: ${trimmed}` }],
   })
 
-  const answer = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, we could not generate a response right now.'
+  // Sonnet 5 runs adaptive thinking by default — take the last text block.
+  const answerBlocks = response.content.filter(b => b.type === 'text')
+  const answer = answerBlocks.length > 0
+    ? answerBlocks[answerBlocks.length - 1].text
+    : 'Sorry, we could not generate a response right now.'
 
   return NextResponse.json({ answer })
 }

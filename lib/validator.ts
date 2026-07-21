@@ -102,7 +102,7 @@ export async function sanityCheckDecisions(
     .join('\n')
 
   const res = await ai.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 400,
     messages: [{
       role: 'user',

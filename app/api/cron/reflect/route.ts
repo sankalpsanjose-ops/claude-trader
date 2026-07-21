@@ -99,12 +99,14 @@ Respond with JSON only:
 }`
 
   const res = await ai.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 6000,
+    model: 'claude-sonnet-5',
+    max_tokens: 8000,
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const text = res.content[0].type === 'text' ? res.content[0].text : ''
+  // Sonnet 5 runs adaptive thinking by default — take the last text block.
+  const textBlocks = res.content.filter(b => b.type === 'text')
+  const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) {
     return NextResponse.json({ error: 'Reflection did not return valid JSON' }, { status: 500 })

@@ -42,11 +42,13 @@ Use null for trailingPE or analystTargetUpside when data is unavailable.`
 
   try {
     const msg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2500,
+      model: 'claude-sonnet-5',
+      max_tokens: 4000,
       messages: [{ role: 'user', content: prompt }],
     })
-    const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
+    // Sonnet 5 runs adaptive thinking by default — take the last text block.
+    const textBlocks = msg.content.filter(b => b.type === 'text')
+    const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) return FALLBACK
     return JSON.parse(match[0]) as DeltaReport

@@ -71,11 +71,13 @@ Valid overallSentiment values: "bullish", "bearish", "neutral"`
 
   try {
     const msg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
+      model: 'claude-sonnet-5',
+      max_tokens: 5000,
       messages: [{ role: 'user', content: prompt }],
     })
-    const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
+    // Sonnet 5 runs adaptive thinking by default — take the last text block.
+    const textBlocks = msg.content.filter(b => b.type === 'text')
+    const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) return { ...FALLBACK, macroMemory: existingMacroMemory }
     const parsed = JSON.parse(match[0]) as CharlieReport
