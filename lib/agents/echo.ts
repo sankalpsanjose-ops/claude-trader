@@ -62,11 +62,13 @@ function fmtDelta(r: DeltaReport): string {
   return lines.join('\n')
 }
 
-const FALLBACK: EchoReport = {
-  perSymbol: {},
-  macroContext: 'Intelligence synthesis unavailable.',
-  topOpportunities: [],
-  topRisks: [],
+function buildFallback(reason: string): EchoReport {
+  return {
+    perSymbol: {},
+    macroContext: `Intelligence synthesis unavailable — ${reason}`,
+    topOpportunities: [],
+    topRisks: [],
+  }
 }
 
 export async function runEcho(
@@ -121,12 +123,14 @@ Limit topOpportunities and topRisks to 3 items each.`
     const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) {
+      const reason = `no JSON in model response (stop_reason: ${msg.stop_reason})`
       console.error('[Echo] No JSON found in response. Stop reason:', msg.stop_reason, '| Preview:', text.slice(0, 200))
-      return FALLBACK
+      return buildFallback(reason)
     }
     return JSON.parse(match[0]) as EchoReport
   } catch (e) {
-    console.error('[Echo] Failed:', e instanceof Error ? e.message : e)
-    return FALLBACK
+    const reason = e instanceof Error ? e.message : String(e)
+    console.error('[Echo] Failed:', reason)
+    return buildFallback(reason)
   }
 }
