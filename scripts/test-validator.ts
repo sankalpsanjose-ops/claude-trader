@@ -6,7 +6,7 @@
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { validateDecisions, sanityCheckDecisions } from '../lib/validator'
+import { validateDecisions } from '../lib/validator'
 
 const PRICES = {
   'RELIANCE.NS': 1327.80,

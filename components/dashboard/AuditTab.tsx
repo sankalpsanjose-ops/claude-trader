@@ -46,7 +46,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="font-semibold text-[#e6edf3]">Queued for Tomorrow's Open</div>
+            <div className="font-semibold text-[#e6edf3]">Queued for Tomorrow&apos;s Open</div>
             {pendingTrades.length > 0 && (
               <span className="text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2 py-0.5 rounded-full font-semibold">
                 {pendingTrades.length} trade{pendingTrades.length !== 1 ? 's' : ''}
@@ -57,7 +57,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
         </div>
         {pendingTrades.length === 0 ? (
           <div className="px-4 py-8 text-center text-[#6e7681] text-sm">
-            No trades queued — run today's analysis to generate decisions.
+            No trades queued — run today&apos;s analysis to generate decisions.
           </div>
         ) : (
           <div className="overflow-x-auto">

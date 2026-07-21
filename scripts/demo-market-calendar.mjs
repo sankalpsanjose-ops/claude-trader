@@ -30,10 +30,6 @@ function getNextTradingDay(fromDateStr) {
 }
 
 function analysisCronDecision(todayStr) {
-  const tomorrow = new Date(todayStr)
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-  const tomorrowStr = tomorrow.toISOString().split('T')[0]
-
   if (!isTradingDay(todayStr)) {
     return { action: 'SKIP', reason: `Today (${todayStr}) is not a trading day — no analysis` }
   }

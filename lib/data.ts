@@ -46,7 +46,7 @@ async function fetchNiftyData(
 
   if (!baseClose) {
     // Last resort: use hardcoded anchor only if inception date matches
-    if (from <= NIFTY_ANCHOR_DATE || NIFTY_ANCHOR_DATE <= from) baseClose = NIFTY_ANCHOR_CLOSE
+    if (from === NIFTY_ANCHOR_DATE) baseClose = NIFTY_ANCHOR_CLOSE
   }
 
   if (!baseClose) return empty

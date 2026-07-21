@@ -17,13 +17,21 @@ const NSE_HOLIDAYS: Record<number, string[]> = {
   ],
 }
 
+// Tracks years we've already warned about so a missing calendar doesn't spam logs
+// on every isTradingDay() call (getNextTradingDay loops call it repeatedly).
+const warnedMissingYears = new Set<number>()
+
 export function isTradingDay(dateStr: string): boolean {
   const date = new Date(dateStr)
   const day = date.getUTCDay() // 0=Sun, 6=Sat
   if (day === 0 || day === 6) return false
   const year = date.getUTCFullYear()
-  const holidays = NSE_HOLIDAYS[year] ?? []
-  return !holidays.includes(dateStr)
+  const holidays = NSE_HOLIDAYS[year]
+  if (!holidays && !warnedMissingYears.has(year)) {
+    warnedMissingYears.add(year)
+    console.error(`[market-calendar] No NSE holiday list for ${year} — every NSE holiday this year will be misclassified as a trading day until NSE_HOLIDAYS is updated in lib/market-calendar.ts.`)
+  }
+  return !(holidays ?? []).includes(dateStr)
 }
 
 export function getNextTradingDay(fromDateStr: string): string {

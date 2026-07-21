@@ -378,7 +378,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
             <span className="text-[#f85149] text-[11px] mt-0.5 shrink-0">✕</span>
             <p className="text-[11px] text-[#8b949e] leading-relaxed">
               <span className="text-[#e6edf3] font-semibold">Golf hard gates —</span>{' '}
-              Cash below ₹50,000 · single position above 20% of portfolio · invalid symbol suffix (must be .NS or .BO). Any decision that trips these is silently dropped — it never reaches execution regardless of Foxtrot's reasoning.
+              Cash below ₹50,000 · single position above 20% of portfolio · invalid symbol suffix (must be .NS or .BO). Any decision that trips these is silently dropped — it never reaches execution regardless of Foxtrot&apos;s reasoning.
             </p>
           </div>
 
