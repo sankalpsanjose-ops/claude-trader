@@ -170,7 +170,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#5a5f65] text-sm">
+    <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#7a7f88] text-sm">
       {message}
     </div>
   )
