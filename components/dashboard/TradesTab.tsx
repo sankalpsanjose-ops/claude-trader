@@ -107,7 +107,7 @@ export function TradesTab({ trades }: Props) {
                   </TableCell>
 
                   <TableCell className="text-sm text-[#8b949e] max-w-[220px]">
-                    <span className="line-clamp-2">{t.rationale}</span>
+                    <span className="line-clamp-2" title={t.rationale}>{t.rationale}</span>
                   </TableCell>
                 </TableRow>
               )

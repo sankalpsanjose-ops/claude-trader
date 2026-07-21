@@ -127,7 +127,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           </TabsContent>
 
           <TabsContent value="ask" className="mt-0">
-            <AskTab />
+            <AskTab usingTradingTeam={usingTradingTeam} />
           </TabsContent>
         </div>
       </Tabs>

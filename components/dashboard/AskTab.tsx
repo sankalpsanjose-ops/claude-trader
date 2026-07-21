@@ -7,16 +7,21 @@ interface Message {
   content: string
 }
 
-const WELCOME: Message = {
+const TEAM_WELCOME: Message = {
   role: 'assistant',
   content: "I'm KingPin — the voice of our 8-agent trading team. We cover global markets, geopolitics, technical signals, fundamental research, portfolio decisions, and risk management.\n\nAsk us anything: why we bought or sold a stock, what our macro intelligence is seeing, how geopolitical events like oil shocks are shaping our thinking, what patterns we're noticing in our own behaviour, or how our risk review has been pushing back on decisions. We're an open book.",
+}
+
+const SOLO_WELCOME: Message = {
+  role: 'assistant',
+  content: "I'm KingPin — speaking for the trading system, currently running as a single decision-making agent plus rules validation and risk auditing (no specialist team active right now).\n\nAsk us anything: why we bought or sold a stock, what patterns we're noticing in our own behaviour, or how our risk review has been pushing back on decisions. We're an open book.",
 }
 
 const MAX_CHARS = 500
 const WARN_THRESHOLD = 450
 
-export function AskTab() {
-  const [messages, setMessages] = useState<Message[]>([WELCOME])
+export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
+  const [messages, setMessages] = useState<Message[]>([usingTradingTeam ? TEAM_WELCOME : SOLO_WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -76,7 +81,7 @@ export function AskTab() {
           </div>
           <div>
             <span className="text-[#e6edf3] font-semibold text-sm">KingPin</span>
-            <div className="text-[10px] text-[#8b949e]">Voice of the 8-agent team</div>
+            <div className="text-[10px] text-[#8b949e]">{usingTradingTeam ? 'Voice of the 8-agent team' : 'Voice of the trading system (solo mode)'}</div>
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-[#484f58]">
