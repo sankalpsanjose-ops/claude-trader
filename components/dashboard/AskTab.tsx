@@ -76,7 +76,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
       {/* Header */}
       <div className="bg-[#12151a] border-b border-[#1f242c] px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0">
             K
           </div>
           <div>
@@ -95,10 +95,10 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
         {messages.map((msg, i) =>
           msg.role === 'assistant' ? (
             <div key={i} className="flex gap-3 max-w-[85%] mr-auto">
-              <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-white shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0 mt-0.5">
                 K
               </div>
-              <div className="bg-[#0a0b0d] border border-[#1f242c] rounded-lg rounded-tl-none px-4 py-3 text-sm text-[#c9d1d9] leading-relaxed whitespace-pre-wrap">
+              <div className="bg-[#0a0b0d] border border-[#1f242c] rounded-lg rounded-tl-none px-4 py-3 text-sm text-[#f4f2ec] leading-relaxed whitespace-pre-wrap">
                 {msg.content}
               </div>
             </div>
@@ -113,7 +113,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
 
         {loading && (
           <div className="flex gap-3 max-w-[85%] mr-auto">
-            <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-white shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0 mt-0.5">
               K
             </div>
             <div className="bg-[#0a0b0d] border border-[#1f242c] rounded-lg rounded-tl-none px-4 py-3">
@@ -158,7 +158,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
           <button
             onClick={handleSubmit}
             disabled={loading || !input.trim() || overLimit}
-            className="px-4 py-2 bg-[#d4af6a] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
+            className="px-4 py-2 bg-[#d4af6a] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-[#0a0b0d] text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
           >
             {loading ? '...' : 'Send'}
           </button>

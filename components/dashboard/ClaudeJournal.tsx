@@ -36,7 +36,7 @@ export function ClaudeJournal({ analysis }: Props) {
 
       <div className="space-y-3">
         {visible.map((p, i) => (
-          <p key={i} className="text-sm text-[#c9d1d9] leading-7">{p}</p>
+          <p key={i} className="text-sm text-[#f4f2ec] leading-7">{p}</p>
         ))}
       </div>
 

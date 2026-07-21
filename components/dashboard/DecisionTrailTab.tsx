@@ -40,7 +40,7 @@ function AgentRow({ agent, children }: { agent: 'alpha' | 'bravo' | 'charlie' | 
   return (
     <div className="flex gap-3 py-3 border-b border-[#161819] last:border-0 last:pb-0 items-start">
       <AgentTag agent={agent} />
-      <div className="text-[13px] text-[#c9d1d9] leading-relaxed flex-1">{children}</div>
+      <div className="text-[13px] text-[#f4f2ec] leading-relaxed flex-1">{children}</div>
     </div>
   )
 }
@@ -112,7 +112,7 @@ function IndiaIntelCard() {
         {pending ? (
           <div className="space-y-2">
             <p className="text-[12px] text-[#7a7f88]">Pending note (will be consumed by next cron):</p>
-            <pre className="text-[12px] text-[#c9d1d9] whitespace-pre-wrap font-sans bg-[#181a1e] rounded p-3 border border-[#1f242c]">
+            <pre className="text-[12px] text-[#f4f2ec] whitespace-pre-wrap font-sans bg-[#181a1e] rounded p-3 border border-[#1f242c]">
               {pending}
             </pre>
             <button
@@ -134,7 +134,7 @@ function IndiaIntelCard() {
               maxLength={1000}
               rows={3}
               placeholder="e.g. RBI likely to cut rates this week · https://example.com/article · IRCTC had a major outage today"
-              className="w-full bg-[#0a0b0d] border border-[#1f242c] rounded px-3 py-2 text-[13px] text-[#c9d1d9] placeholder-[#5a5f65] resize-none focus:outline-none focus:border-[#3fb950]"
+              className="w-full bg-[#0a0b0d] border border-[#1f242c] rounded px-3 py-2 text-[13px] text-[#f4f2ec] placeholder-[#5a5f65] resize-none focus:outline-none focus:border-[#3fb950]"
             />
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-[#5a5f65]">{note.length}/1000</span>
@@ -172,7 +172,7 @@ function MacroMemoryCard({ content }: { content: string }) {
       </button>
       {open && (
         <div className="border-t border-[#1f242c] px-4 py-4">
-          <pre className="text-[12px] text-[#c9d1d9] leading-relaxed whitespace-pre-wrap font-sans">
+          <pre className="text-[12px] text-[#f4f2ec] leading-relaxed whitespace-pre-wrap font-sans">
             {content}
           </pre>
         </div>
@@ -391,7 +391,7 @@ function SymbolSection({ symbol, action, quantity, foxtrotRationale, bravo, char
           )}
           <div className="mt-2 flex gap-3 items-start bg-[#181a1e] rounded px-3 py-2.5">
             <AgentTag agent="foxtrot" />
-            <div className="text-[13px] text-[#c9d1d9] leading-relaxed pt-0.5">{foxtrotRationale}</div>
+            <div className="text-[13px] text-[#f4f2ec] leading-relaxed pt-0.5">{foxtrotRationale}</div>
           </div>
         </div>
       )}
@@ -445,7 +445,7 @@ export function DecisionTrailTab({ analyses }: Props) {
             onClick={() => setSelectedDate(a.date)}
             className={`text-xs px-3 py-1.5 rounded border transition-colors ${
               a.date === (selectedDate || withReports[0].date)
-                ? 'bg-[#d4af6a] border-[#d4af6a] text-white'
+                ? 'bg-[#d4af6a] border-[#d4af6a] text-[#0a0b0d]'
                 : 'bg-[#12151a] border-[#1f242c] text-[#7a7f88] hover:border-[#d4af6a] hover:text-[#d4af6a]'
             }`}
           >

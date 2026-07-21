@@ -52,7 +52,7 @@ export function SubscribeCard() {
   return (
     <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-5">
       <div className="flex items-start gap-4">
-        <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-white shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0 mt-0.5">
           K
         </div>
         <div className="flex-1 min-w-0">
@@ -72,7 +72,7 @@ export function SubscribeCard() {
             <button
               type="submit"
               disabled={state === 'loading' || !email.trim()}
-              className="px-4 py-2 bg-[#d4af6a] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap"
+              className="px-4 py-2 bg-[#d4af6a] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-[#0a0b0d] text-sm font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap"
             >
               {state === 'loading' ? '…' : 'Subscribe'}
             </button>

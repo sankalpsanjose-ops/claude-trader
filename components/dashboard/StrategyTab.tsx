@@ -411,7 +411,7 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
       {/* KingPin */}
       <div className="bg-[#12151a] border border-[#1f242c] rounded-lg overflow-hidden">
         <div className="px-4 py-3 border-b border-[#1f242c] flex items-center gap-3">
-          <div className="w-7 h-7 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0">
             K
           </div>
           <div>
