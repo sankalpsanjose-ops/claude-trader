@@ -51,13 +51,11 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
   // Under normal operation the evening cron writes a new analysis every calendar
   // day (weekends included — it just runs observe-only), so a gap of 2+ days
   // means the pipeline actually failed, not just "hasn't run yet today."
-  // NOTE: display of this moved out of the header (see Task 6 — Summary tab stat row).
-  // The computation is kept here because a later task passes it down as a prop.
+  // Displayed in the Summary tab's stat row (Task 6) as "Last Analysis".
   const latestAnalysisDate = summary?.latest_analysis?.date ?? null
   const daysSinceAnalysis = latestAnalysisDate
     ? Math.max(0, Math.round((new Date(todayIST()).getTime() - new Date(latestAnalysisDate).getTime()) / 86400000))
     : null
-  void daysSinceAnalysis
 
   const inceptionDate = summary?.portfolio.inception_date ?? null
   const formattedInceptionDate = inceptionDate
@@ -124,7 +122,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
         <div className="px-4 md:px-6 py-5">
           <TabsContent value="summary" className="mt-0">
             {summary ? (
-              <SummaryTab data={summary} liveStartDate={liveStartDate} startingCapital={startingCapital} />
+              <SummaryTab data={summary} liveStartDate={liveStartDate} startingCapital={startingCapital} daysSinceAnalysis={daysSinceAnalysis} />
             ) : (
               <EmptyState message="Portfolio data is loading. Make sure your Supabase and API keys are configured." />
             )}
