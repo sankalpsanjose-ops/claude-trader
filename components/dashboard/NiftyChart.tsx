@@ -53,7 +53,7 @@ export function NiftyChart({ data }: Props) {
           <YAxis hide domain={['auto', 'auto']} />
           <ReferenceLine y={0} stroke="#484f58" strokeDasharray="4 3" />
           <Tooltip
-            contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6, fontSize: 12 }}
+            contentStyle={{ background: '#12151a', border: '1px solid #1f242c', borderRadius: 6, fontSize: 12 }}
             labelStyle={{ color: '#8b949e' }}
             formatter={(_v: unknown, _name: unknown, props: { payload?: { pct: number; close: number } }) => {
               const { pct, close } = props.payload ?? { pct: 0, close: 0 }
@@ -66,10 +66,10 @@ export function NiftyChart({ data }: Props) {
           <Line
             type="monotone"
             dataKey="pct"
-            stroke="#58a6ff"
+            stroke="#7a7f88"
             strokeWidth={1.5}
             dot={false}
-            activeDot={{ r: 3, fill: '#58a6ff' }}
+            activeDot={{ r: 3, fill: '#7a7f88' }}
             connectNulls
           />
         </LineChart>
