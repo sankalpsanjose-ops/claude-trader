@@ -95,7 +95,7 @@ export function SummaryTab({ data, liveStartDate, startingCapital, daysSinceAnal
         </div>
         {data.nifty_raw_history.length > 0
           ? <NiftyChart data={data.nifty_raw_history} />
-          : <div className="flex items-center justify-center h-20 text-sm text-[#5a5f65]">Nifty data unavailable — Yahoo Finance may be temporarily down. Refresh to retry.</div>
+          : <div className="flex items-center justify-center h-20 text-sm text-[#7a7f88]">Nifty data unavailable — Yahoo Finance may be temporarily down. Refresh to retry.</div>
         }
       </div>
 
