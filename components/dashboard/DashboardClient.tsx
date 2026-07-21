@@ -51,63 +51,68 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
   // Under normal operation the evening cron writes a new analysis every calendar
   // day (weekends included — it just runs observe-only), so a gap of 2+ days
   // means the pipeline actually failed, not just "hasn't run yet today."
+  // NOTE: display of this moved out of the header (see Task 6 — Summary tab stat row).
+  // The computation is kept here because a later task passes it down as a prop.
   const latestAnalysisDate = summary?.latest_analysis?.date ?? null
   const daysSinceAnalysis = latestAnalysisDate
     ? Math.max(0, Math.round((new Date(todayIST()).getTime() - new Date(latestAnalysisDate).getTime()) / 86400000))
     : null
+  void daysSinceAnalysis
+
+  const inceptionDate = summary?.portfolio.inception_date ?? null
+  const formattedInceptionDate = inceptionDate
+    ? new Date(inceptionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
+  const lastBenchmark = summary?.benchmark_history?.length
+    ? summary.benchmark_history[summary.benchmark_history.length - 1].value
+    : null
+  const benchmarkPct = lastBenchmark ? ((lastBenchmark - startingCapital) / startingCapital * 100) : null
 
   return (
-    <div className="min-h-screen bg-[#0d1117]">
-      {/* Top bar */}
-      <div className="bg-[#161b22] border-b border-[#30363d] px-4 md:px-6 py-4 flex items-center justify-between shadow-[0_2px_16px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center gap-4">
-          <div className="rounded-2xl overflow-hidden shadow-[0_2px_16px_rgba(56,189,248,0.18),0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
-            <Image src="/logo.png" alt="Claude Trader" width={200} height={54} className="h-9 md:h-12 w-auto block" priority />
+    <div className="min-h-screen bg-[#0a0b0d]">
+      {/* Header: quiet identity strip + hero portfolio value */}
+      <div className="bg-[#12151a] border-b border-[#1f242c]">
+        {/* Quiet top strip */}
+        <div className="px-4 md:px-6 pt-4 pb-3 flex items-center justify-between gap-3">
+          <div className="rounded-md overflow-hidden">
+            <Image src="/logo.png" alt="Claude Trader" width={120} height={32} className="h-6 md:h-7 w-auto block" priority />
           </div>
-          <span className="hidden sm:inline text-[11px] bg-[#1f6feb] text-[#cae8ff] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap">
-            Paper Trading
-          </span>
-          <span className={`hidden sm:inline text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap ${
-            usingTradingTeam
-              ? 'bg-[#1a3a1a] text-[#3fb950]'
-              : 'bg-[#21262d] text-[#6e7681]'
-          }`}>
-            {usingTradingTeam ? 'Trading Team' : 'Solo Agent'}
-          </span>
-          {daysSinceAnalysis !== null && (
-            <span
-              title={`Last analysis: ${latestAnalysisDate}`}
-              className={`hidden sm:inline text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap ${
-                daysSinceAnalysis >= 2
-                  ? 'bg-[#3d1a1a] text-[#f85149]'
-                  : 'bg-[#21262d] text-[#6e7681]'
-              }`}
-            >
-              {daysSinceAnalysis >= 2
-                ? `⚠ Analysis stale — ${daysSinceAnalysis}d`
-                : daysSinceAnalysis === 0 ? 'Analysis: today' : 'Analysis: yesterday'}
+          <div className="flex items-center gap-2 text-[12px] text-[#7a7f88] whitespace-nowrap">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#5a5f65]" aria-hidden="true" />
+            <span suppressHydrationWarning>
+              Paper trading · {usingTradingTeam ? 'Trading team' : 'Solo agent'} · Updated {lastUpdated}
             </span>
-          )}
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-[#e6edf3] font-semibold">{fmt(portfolioValue)}</span>
-          <span className={`text-sm font-medium ${totalPnl >= 0 ? 'text-[#3fb950]' : 'text-[#f85149]'}`}>
-            {totalPnl >= 0 ? '▲' : '▼'} {totalPnlPct >= 0 ? '+' : ''}{totalPnlPct.toFixed(2)}%
-          </span>
-          <span className="text-[#6e7681] text-xs hidden md:inline" suppressHydrationWarning>Updated {lastUpdated}</span>
+
+        {/* Hero: portfolio value */}
+        <div className="px-4 md:px-6 pb-6">
+          <div className="text-[11px] uppercase tracking-[0.1em] text-[#7a7f88] mb-2">
+            Portfolio Value{summary?.days_running != null ? ` · Day ${summary.days_running} of Season 2` : ''}
+          </div>
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <span className="text-5xl md:text-6xl font-light text-[#f4f2ec] tabular-nums">{fmt(portfolioValue)}</span>
+            <span className={`text-lg md:text-xl font-medium ${totalPnl >= 0 ? 'text-[#3fb950]' : 'text-[#f85149]'}`}>
+              {totalPnl >= 0 ? '▲' : '▼'} {totalPnlPct >= 0 ? '+' : ''}{totalPnlPct.toFixed(2)}%
+            </span>
+          </div>
+          <div className="text-[13px] text-[#7a7f88] mt-2">
+            Started {fmt(startingCapital)}{formattedInceptionDate ? ` on ${formattedInceptionDate}` : ''}
+            {benchmarkPct !== null ? ` · vs Nifty 50 ${benchmarkPct >= 0 ? '+' : ''}${benchmarkPct.toFixed(2)}% since inception` : ''}
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <div className="bg-[#161b22] border-b border-[#30363d] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+        <div className="bg-[#12151a] border-b border-[#1f242c] overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
           <div className="px-4 md:px-6">
           <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none flex-nowrap min-w-max">
             {(['summary', 'holdings', 'trades', 'audit', 'trail', 'strategy', 'changelog', 'ask'] as const).map(t => (
               <TabsTrigger
                 key={t}
                 value={t}
-                className="capitalize rounded-none border-b-[3px] border-transparent px-4 py-3 text-[13px] font-medium text-[#8b949e] data-[state=active]:text-[#79c0ff] data-[state=active]:border-[#58a6ff] data-[state=active]:bg-transparent hover:text-[#e6edf3] transition-colors"
+                className="rounded-none border-x-0 border-t-0 border-b-[3px] border-b-transparent px-4 py-3 text-[11px] uppercase tracking-[0.1em] font-medium text-[#7a7f88] data-active:bg-transparent data-active:text-[#d4af6a] data-active:border-b-[#d4af6a] data-active:shadow-none hover:text-[#f4f2ec] transition-colors"
               >
                 {t}
               </TabsTrigger>
@@ -156,7 +161,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
       </Tabs>
 
       {/* Footer */}
-      <div className="px-4 md:px-6 pb-6 text-center text-[11px] text-[#484f58]">
+      <div className="px-4 md:px-6 pb-6 text-center text-[11px] text-[#5a5f65]">
         Claude Trader · ₹{startingCapital.toLocaleString('en-IN')} starting capital · NSE &amp; BSE · No real money involved
       </div>
     </div>
@@ -165,7 +170,7 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-12 text-center text-[#6e7681] text-sm">
+    <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-12 text-center text-[#5a5f65] text-sm">
       {message}
     </div>
   )
