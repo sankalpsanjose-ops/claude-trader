@@ -33,10 +33,10 @@ Alpha and Bravo are pure TypeScript — no LLM call. Golf is also pure TypeScrip
 
 ## Tech stack
 
-- **Framework:** Next.js 15 App Router (`force-dynamic` server components)
+- **Framework:** Next.js 16 App Router (`force-dynamic` server components)
 - **Database:** Supabase (Postgres via REST API)
 - **Market data:** Yahoo Finance (`yahoo-finance2`)
-- **AI:** Anthropic API (`claude-sonnet-4-6`, `claude-haiku-4-5`)
+- **AI:** Anthropic API (`claude-sonnet-5`, `claude-haiku-4-5`)
 - **Hosting:** Vercel (with cron job triggers)
 
 ---

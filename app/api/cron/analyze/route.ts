@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getQuotes, DEFAULT_WATCHLIST } from '@/lib/yahoo'
 import { runDailyAnalysis, reviseFoxtrotDecisions, loadTraderProfileFromFile } from '@/lib/claude'
+import type { AgentOutput } from '@/lib/claude'
 import { runTradingTeam } from '@/lib/agents/team'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
@@ -121,9 +122,27 @@ export async function GET(req: NextRequest) {
     traderProfile,
   }
 
-  const analysis = process.env.USE_TRADING_TEAM === 'true'
-    ? await runTradingTeam(agentInput)
-    : await runDailyAnalysis(agentInput)
+  let analysis: AgentOutput
+  try {
+    analysis = process.env.USE_TRADING_TEAM === 'true'
+      ? await runTradingTeam(agentInput)
+      : await runDailyAnalysis(agentInput)
+  } catch (e) {
+    // Without this, a failed LLM call (e.g. insufficient API credit) throws here
+    // and the entire day silently produces zero rows anywhere — no daily_analyses,
+    // no audit, no pending trade — leaving no trace that anything went wrong.
+    const message = e instanceof Error ? e.message : String(e)
+    console.error('[analyze] Analysis failed:', message)
+    await supabaseAdmin.from('audits').upsert({
+      date: today,
+      decisions_raw: [],
+      decisions_valid: [],
+      rejections: [],
+      sanity_passed: false,
+      sanity_notes: `Analysis failed: ${message}`,
+    })
+    return NextResponse.json({ error: 'Analysis failed', detail: message }, { status: 500 })
+  }
 
   let { valid, rejected } = validateDecisions(analysis.decisions, {
     cash: portfolio.cash,
