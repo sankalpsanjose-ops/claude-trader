@@ -102,9 +102,15 @@ const CATEGORY_COLOURS: Record<string, string> = {
   monthly:  'bg-[#21262d] text-[#8b949e]',
 }
 
-function renderMarkdown(md: string) {
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+function renderMarkdown(md: string): { elements: React.ReactNode[]; headings: { id: string; text: string }[] } {
   const lines = md.split('\n')
   const elements: React.ReactNode[] = []
+  const headings: { id: string; text: string }[] = []
+  const usedSlugs = new Set<string>()
   let i = 0
   let key = 0
 
@@ -114,9 +120,16 @@ function renderMarkdown(md: string) {
     if (line.startsWith('# ')) { i++; continue }
 
     if (line.startsWith('## ')) {
+      const text = line.slice(3)
+      const base = slugify(text)
+      let id = base
+      let suffix = 1
+      while (usedSlugs.has(id)) { id = `${base}-${++suffix}` }
+      usedSlugs.add(id)
+      headings.push({ id, text })
       elements.push(
-        <h2 key={key++} className="text-[#e6edf3] font-semibold text-sm mt-6 mb-2 pb-1 border-b border-[#21262d]">
-          {line.slice(3)}
+        <h2 key={key++} id={id} className="text-[#e6edf3] font-semibold text-sm mt-6 mb-2 pb-1 border-b border-[#21262d]">
+          {text}
         </h2>
       )
       i++; continue
@@ -219,7 +232,7 @@ function renderMarkdown(md: string) {
     i++
   }
 
-  return elements
+  return { elements, headings }
 }
 
 function inlineFormat(text: string): string {
@@ -231,6 +244,7 @@ function inlineFormat(text: string): string {
 export function StrategyTab({ content, lastUpdated, version, learnings, usingTradingTeam }: Props) {
   const dailyLearnings = learnings.filter(l => l.source === 'daily').slice(0, 30)
   const monthlyReflections = learnings.filter(l => l.source === 'monthly_reflection')
+  const parsed = content ? renderMarkdown(content) : null
 
   return (
     <div className="space-y-4">
@@ -505,12 +519,32 @@ export function StrategyTab({ content, lastUpdated, version, learnings, usingTra
         </div>
       )}
 
+      {/* Jump to section — the profile below runs to hundreds of lines */}
+      {parsed && parsed.headings.length >= 2 && (
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+          <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
+            Jump to Section
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {parsed.headings.map(h => (
+              <a
+                key={h.id}
+                href={`#${h.id}`}
+                className="text-[11px] px-2.5 py-1 rounded-full bg-[#21262d] text-[#79c0ff] hover:bg-[#30363d] transition-colors whitespace-nowrap"
+              >
+                {h.text}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Profile content */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
         <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-4">
           Active Trading Profile
         </div>
-        {content ? renderMarkdown(content) : (
+        {parsed ? parsed.elements : (
           <p className="text-sm text-[#6e7681]">Profile not loaded.</p>
         )}
       </div>
