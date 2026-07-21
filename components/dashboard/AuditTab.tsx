@@ -48,7 +48,7 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
           <div className="flex items-center gap-2">
             <div className="font-semibold text-[#f4f2ec]">Queued for Tomorrow&apos;s Open</div>
             {pendingTrades.length > 0 && (
-              <span className="text-[11px] bg-[#d4af6a] text-[#f4f2ec] px-2 py-0.5 rounded-full font-semibold">
+              <span className="text-[11px] bg-[#d4af6a] text-[#0a0b0d] px-2 py-0.5 rounded-full font-semibold">
                 {pendingTrades.length} trade{pendingTrades.length !== 1 ? 's' : ''}
               </span>
             )}
