@@ -7,7 +7,7 @@ const anthropic = new Anthropic()
 const FALLBACK: DeltaReport = { perSymbol: {} }
 
 export async function runDelta(symbols: string[]): Promise<DeltaReport> {
-  const fundamentals = await getFundamentalsForSymbols(symbols.slice(0, 15))
+  const fundamentals = await getFundamentalsForSymbols(symbols)
   if (fundamentals.length === 0) return FALLBACK
 
   const rows = fundamentals.map(f => {

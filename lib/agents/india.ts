@@ -42,18 +42,8 @@ export async function runIndia(userNote: string): Promise<IndiaReport | null> {
     promptContext = `The portfolio manager has provided this note:\n\n${userNote}`
   }
 
-  const tools: Anthropic.Tool[] = isUrl ? [] : [
-    {
-      name: 'web_search',
-      description: 'Search the web for current information',
-      input_schema: {
-        type: 'object' as const,
-        properties: {
-          query: { type: 'string', description: 'The search query' },
-        },
-        required: ['query'],
-      },
-    },
+  const tools: Anthropic.Messages.ToolUnion[] = isUrl ? [] : [
+    { type: 'web_search_20260209', name: 'web_search' },
   ]
 
   const prompt = `You are India, an intelligence agent for an Indian equity trading team. The portfolio manager — your direct source — has provided intelligence below. Your job is to assess its relevance and, if relevant, file a structured report for the synthesis agent (Echo).
@@ -90,8 +80,10 @@ Respond with JSON only:
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const textBlock = msg.content.find(b => b.type === 'text')
-    const text = textBlock?.type === 'text' ? textBlock.text : ''
+    // With web_search active, content may include search blocks before the
+    // final answer — take the last text block, not the first.
+    const textBlocks = msg.content.filter(b => b.type === 'text')
+    const text = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : ''
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) {
       console.error('[India] No JSON in response')
