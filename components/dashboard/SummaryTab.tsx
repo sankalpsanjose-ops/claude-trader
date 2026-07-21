@@ -30,7 +30,7 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
         <StatCard
           label="Portfolio Value"
           value={fmtINR(portfolio.total_value)}
-          sub={`Started ${fmtINR(startingCapital)} · Day ${days_running}`}
+          sub={`Started ${fmtINR(startingCapital)} · Day ${days_running} (calendar)`}
         />
         <StatCard
           label="Total P&L"
