@@ -135,7 +135,60 @@ export function AuditTab({ audits, pendingTrades, latestTeamBrief }: Props) {
           <div className="font-semibold text-[#e6edf3]">Daily Audit Log</div>
           <div className="text-xs text-[#8b949e]">Most recent first</div>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* Mobile: stacked cards — the table hides Rejection Details and Sanity
+            Notes below sm, which is the actual substance of this log */}
+        <div className="sm:hidden divide-y divide-[#21262d]">
+          {audits.map(a => {
+            const rejCount = a.rejections?.length ?? 0
+            const rawCount = a.decisions_raw?.length ?? 0
+            const validCount = a.decisions_valid?.length ?? 0
+
+            return (
+              <div key={a.id} className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-mono text-[#8b949e]">
+                    {new Date(a.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] ${a.sanity_passed
+                      ? 'border-[#3fb950] text-[#3fb950]'
+                      : 'border-[#f85149] text-[#f85149]'}`}
+                  >
+                    {a.sanity_passed ? 'PASS' : 'WARN'}
+                  </Badge>
+                </div>
+                <div className="flex gap-4 text-sm mb-2">
+                  <div><span className="text-[#8b949e]">Proposed </span><span className="text-[#e6edf3]">{rawCount}</span></div>
+                  <div><span className="text-[#8b949e]">Approved </span><span className="text-[#3fb950] font-semibold">{validCount}</span></div>
+                  <div>
+                    <span className="text-[#8b949e]">Rejected </span>
+                    {rejCount > 0
+                      ? <span className="text-[#f85149] font-semibold">{rejCount}</span>
+                      : <span className="text-[#484f58]">—</span>
+                    }
+                  </div>
+                </div>
+                {rejCount > 0 && (
+                  <div className="text-xs text-[#f85149] mb-2">
+                    {a.rejections.map((r, i) => (
+                      <div key={i} className="mb-1">
+                        <span className="text-[#e6edf3] font-mono">{r.symbol}</span>
+                        {' — '}{r.reason}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="text-xs text-[#8b949e] leading-relaxed">
+                  {a.sanity_notes || '—'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="overflow-x-auto hidden sm:block">
           <Table>
             <TableHeader>
               <TableRow className="border-[#30363d] hover:bg-transparent">

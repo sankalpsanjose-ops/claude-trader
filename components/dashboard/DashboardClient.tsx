@@ -11,6 +11,7 @@ import { StrategyTab } from './StrategyTab'
 import { ChangelogTab } from './ChangelogTab'
 import { DecisionTrailTab } from './DecisionTrailTab'
 import { AskTab } from './AskTab'
+import { todayIST } from '@/lib/ist'
 import type { PortfolioSummary, HoldingWithLive, Trade, DailyAudit, Learning, PendingTrade, TraderProfile, DailyAnalysis } from '@/types'
 
 interface Props {
@@ -47,6 +48,14 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
     timeZoneName: 'short',
   })
 
+  // Under normal operation the evening cron writes a new analysis every calendar
+  // day (weekends included — it just runs observe-only), so a gap of 2+ days
+  // means the pipeline actually failed, not just "hasn't run yet today."
+  const latestAnalysisDate = summary?.latest_analysis?.date ?? null
+  const daysSinceAnalysis = latestAnalysisDate
+    ? Math.max(0, Math.round((new Date(todayIST()).getTime() - new Date(latestAnalysisDate).getTime()) / 86400000))
+    : null
+
   return (
     <div className="min-h-screen bg-[#0d1117]">
       {/* Top bar */}
@@ -65,6 +74,20 @@ export function DashboardClient({ summary, holdings, trades, audits, learnings, 
           }`}>
             {usingTradingTeam ? 'Trading Team' : 'Solo Agent'}
           </span>
+          {daysSinceAnalysis !== null && (
+            <span
+              title={`Last analysis: ${latestAnalysisDate}`}
+              className={`hidden sm:inline text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide whitespace-nowrap ${
+                daysSinceAnalysis >= 2
+                  ? 'bg-[#3d1a1a] text-[#f85149]'
+                  : 'bg-[#21262d] text-[#6e7681]'
+              }`}
+            >
+              {daysSinceAnalysis >= 2
+                ? `⚠ Analysis stale — ${daysSinceAnalysis}d`
+                : daysSinceAnalysis === 0 ? 'Analysis: today' : 'Analysis: yesterday'}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-[#e6edf3] font-semibold">{fmt(portfolioValue)}</span>
