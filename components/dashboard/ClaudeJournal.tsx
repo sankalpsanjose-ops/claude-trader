@@ -26,12 +26,12 @@ export function ClaudeJournal({ analysis }: Props) {
   const visible = expanded || !isLong ? paragraphs : paragraphs.slice(0, PREVIEW_COUNT)
 
   return (
-    <div className="bg-[#161b22] border border-[#30363d] border-l-4 border-l-[#58a6ff] rounded-lg p-5">
+    <div className="bg-[#12151a] border border-[#1f242c] border-l-4 border-l-[#d4af6a] rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-[11px] uppercase tracking-wider text-[#58a6ff] font-semibold">
+        <div className="text-[11px] uppercase tracking-[0.1em] text-[#d4af6a] font-semibold">
           Claude&apos;s Market View
         </div>
-        <div className="text-[11px] text-[#6e7681]">{date}</div>
+        <div className="text-[11px] text-[#5a5f65]">{date}</div>
       </div>
 
       <div className="space-y-3">
@@ -43,13 +43,13 @@ export function ClaudeJournal({ analysis }: Props) {
       {isLong && (
         <button
           onClick={() => setExpanded(v => !v)}
-          className="mt-3 text-[12px] text-[#58a6ff] hover:text-[#79c0ff] transition-colors font-medium"
+          className="mt-3 text-[12px] text-[#d4af6a] hover:text-[#d4af6a] transition-colors font-medium"
         >
           {expanded ? '↑ Show less' : `↓ Read more (${paragraphs.length - PREVIEW_COUNT} more paragraph${paragraphs.length - PREVIEW_COUNT !== 1 ? 's' : ''})`}
         </button>
       )}
 
-      <div className="mt-4 pt-3 border-t border-[#21262d] text-[12px] text-[#6e7681] italic">
+      <div className="mt-4 pt-3 border-t border-[#161819] text-[12px] text-[#5a5f65] italic">
         {analysis.market_summary}
       </div>
     </div>
