@@ -379,7 +379,7 @@ function SymbolSection({ symbol, action, quantity, foxtrotRationale, bravo, char
                 <span className={echoData.outlook === 'bullish' ? 'text-[#3fb950]' : echoData.outlook === 'bearish' ? 'text-[#f85149]' : 'text-[#7a7f88]'}>
                   {echoData.outlook}
                 </span>
-                <span className="text-[#5a5f65]"> ({echoData.conviction} conviction)</span>
+                <span className="text-[#7a7f88]"> ({echoData.conviction} conviction)</span>
                 {' — '}{echoData.keyReason}
                 {echoData.conflicts.length > 0 && (
                   <div className="mt-1 text-[11px] text-[#e3b341]">
