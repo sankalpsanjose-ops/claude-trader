@@ -43,7 +43,7 @@ export function ClaudeJournal({ analysis }: Props) {
       {isLong && (
         <button
           onClick={() => setExpanded(v => !v)}
-          className="mt-3 text-[12px] text-[#d4af6a] hover:text-[#d4af6a] transition-colors font-medium"
+          className="mt-3 text-[12px] text-[#d4af6a] hover:text-[#e0c088] transition-colors font-medium"
         >
           {expanded ? '↑ Show less' : `↓ Read more (${paragraphs.length - PREVIEW_COUNT} more paragraph${paragraphs.length - PREVIEW_COUNT !== 1 ? 's' : ''})`}
         </button>
