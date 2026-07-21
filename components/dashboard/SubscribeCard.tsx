@@ -72,7 +72,7 @@ export function SubscribeCard() {
             <button
               type="submit"
               disabled={state === 'loading' || !email.trim()}
-              className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap"
+              className="px-4 py-2 bg-[#1f6feb] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap"
             >
               {state === 'loading' ? '…' : 'Subscribe'}
             </button>

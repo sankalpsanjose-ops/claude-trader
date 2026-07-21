@@ -158,7 +158,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
           <button
             onClick={handleSubmit}
             disabled={loading || !input.trim() || overLimit}
-            className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
+            className="px-4 py-2 bg-[#1f6feb] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
           >
             {loading ? '...' : 'Send'}
           </button>
