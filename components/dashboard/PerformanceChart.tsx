@@ -22,7 +22,7 @@ function formatINR(value: number) {
 export function PerformanceChart({ data, benchmark = [], liveStartDate, startingCapital }: Props) {
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center h-24 text-sm text-[#6e7681]">
+      <div className="flex items-center justify-center h-24 text-sm text-[#7a7f88]">
         Chart will appear after a few trading days
       </div>
     )
@@ -60,15 +60,15 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate, starting
       <div className="flex items-center gap-4 text-xs">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 rounded-full inline-block" style={{ background: isUp ? '#3fb950' : '#f85149' }} />
-          <span className="text-[#8b949e]">Claude</span>
+          <span className="text-[#7a7f88]">Claude</span>
           <span className={isUp ? 'text-[#3fb950]' : 'text-[#f85149]'}>
             {claudePct >= 0 ? '+' : ''}{claudePct.toFixed(2)}%
           </span>
         </div>
         {lastBenchmark && (
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 rounded-full inline-block" style={{ background: '#58a6ff', opacity: 0.6 }} />
-            <span className="text-[#8b949e]">Nifty 50</span>
+            <span className="w-3 h-0.5 rounded-full inline-block" style={{ background: '#7a7f88' }} />
+            <span className="text-[#7a7f88]">Nifty 50</span>
             <span className={benchmarkPct! >= 0 ? 'text-[#3fb950]' : 'text-[#f85149]'}>
               {benchmarkPct! >= 0 ? '+' : ''}{benchmarkPct!.toFixed(2)}%
             </span>
@@ -80,21 +80,21 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate, starting
         <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: '#6e7681' }}
+            tick={{ fontSize: 10, fill: '#5a5f65' }}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
           />
           <YAxis hide domain={['auto', 'auto']} />
           <Tooltip
-            contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6, fontSize: 12 }}
-            labelStyle={{ color: '#8b949e' }}
+            contentStyle={{ background: '#12151a', border: '1px solid #1f242c', borderRadius: 6, fontSize: 12 }}
+            labelStyle={{ color: '#7a7f88' }}
             formatter={(v: unknown, name: unknown) => [
               formatINR(v as number),
               name === 'claude' ? 'Claude' : 'Nifty 50',
             ]}
           />
-          <ReferenceLine y={startingCapital} stroke="#484f58" strokeDasharray="4 3" label={{ value: `₹${(startingCapital / 100000).toFixed(1)}L`, position: 'insideTopRight', fontSize: 10, fill: '#484f58' }} />
+          <ReferenceLine y={startingCapital} stroke="#5a5f65" strokeDasharray="4 3" label={{ value: `₹${(startingCapital / 100000).toFixed(1)}L`, position: 'insideTopRight', fontSize: 10, fill: '#5a5f65' }} />
           {liveStartFormatted && (
             <ReferenceLine
               x={liveStartFormatted}
@@ -116,11 +116,10 @@ export function PerformanceChart({ data, benchmark = [], liveStartDate, starting
             <Line
               type="monotone"
               dataKey="nifty"
-              stroke="#58a6ff"
+              stroke="#7a7f88"
               strokeWidth={1.5}
-              strokeOpacity={0.6}
               dot={false}
-              activeDot={{ r: 3, fill: '#58a6ff' }}
+              activeDot={{ r: 3, fill: '#7a7f88' }}
               connectNulls
             />
           )}

@@ -4,27 +4,32 @@ interface StatCardProps {
   sub?: string
   subPositive?: boolean
   subNegative?: boolean
+  /** Force the value to render muted instead of the default bright primary text
+   *  (used for neutral/informational values, e.g. "Last Analysis" when fresh). */
+  valueMuted?: boolean
 }
 
-export function StatCard({ label, value, sub, subPositive, subNegative }: StatCardProps) {
+export function StatCard({ label, value, sub, subPositive, subNegative, valueMuted }: StatCardProps) {
+  const valueClass = subPositive
+    ? 'text-[#3fb950]'
+    : subNegative
+    ? 'text-[#f85149]'
+    : valueMuted
+    ? 'text-[#7a7f88]'
+    : 'text-[#f4f2ec]'
+
   const subClass = subPositive
     ? 'text-[#3fb950]'
     : subNegative
     ? 'text-[#f85149]'
-    : 'text-[#8b949e]'
-
-  const accentBorder = subPositive
-    ? 'border-l-[#3fb950]'
-    : subNegative
-    ? 'border-l-[#f85149]'
-    : 'border-l-[#30363d]'
+    : 'text-[#7a7f88]'
 
   return (
-    <div className={`bg-[#161b22] border border-[#30363d] border-l-4 ${accentBorder} rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]`}>
-      <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-1.5">
+    <div className="border-l border-[#1f242c] pl-4 max-md:[&:nth-child(odd)]:border-l-0 max-md:[&:nth-child(odd)]:pl-0 md:first:border-l-0 md:first:pl-0">
+      <div className="text-[11px] uppercase tracking-[0.1em] text-[#7a7f88] font-semibold mb-1.5">
         {label}
       </div>
-      <div className="text-2xl font-bold text-[#e6edf3]">{value}</div>
+      <div className={`text-2xl font-bold ${valueClass}`}>{value}</div>
       {sub && <div className={`text-xs mt-1 ${subClass}`}>{sub}</div>}
     </div>
   )

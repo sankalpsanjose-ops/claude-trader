@@ -71,20 +71,20 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
   const nearLimit = charCount >= WARN_THRESHOLD
 
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden flex flex-col h-[70vh] min-h-[420px] max-h-[700px]">
+    <div className="bg-[#12151a] border border-[#1f242c] rounded-lg overflow-hidden flex flex-col h-[70vh] min-h-[420px] max-h-[700px]">
 
       {/* Header */}
-      <div className="bg-[#161b22] border-b border-[#30363d] px-4 py-3 flex items-center justify-between shrink-0">
+      <div className="bg-[#12151a] border-b border-[#1f242c] px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-[#1f6feb] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0">
             K
           </div>
           <div>
-            <span className="text-[#e6edf3] font-semibold text-sm">KingPin</span>
-            <div className="text-[10px] text-[#8b949e]">{usingTradingTeam ? 'Voice of the 8-agent team' : 'Voice of the trading system (solo mode)'}</div>
+            <span className="text-[#f4f2ec] font-semibold text-sm">KingPin</span>
+            <div className="text-[10px] text-[#7a7f88]">{usingTradingTeam ? 'Voice of the 8-agent team' : 'Voice of the trading system (solo mode)'}</div>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-[#484f58]">
+        <div className="flex items-center gap-1.5 text-[11px] text-[#7a7f88]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] shrink-0" />
           Grounded in actual trading data
         </div>
@@ -95,16 +95,16 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
         {messages.map((msg, i) =>
           msg.role === 'assistant' ? (
             <div key={i} className="flex gap-3 max-w-[85%] mr-auto">
-              <div className="w-8 h-8 rounded-full bg-[#1f6feb] flex items-center justify-center text-[11px] font-bold text-white shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0 mt-0.5">
                 K
               </div>
-              <div className="bg-[#0d1117] border border-[#30363d] rounded-lg rounded-tl-none px-4 py-3 text-sm text-[#c9d1d9] leading-relaxed whitespace-pre-wrap">
+              <div className="bg-[#0a0b0d] border border-[#1f242c] rounded-lg rounded-tl-none px-4 py-3 text-sm text-[#f4f2ec] leading-relaxed whitespace-pre-wrap">
                 {msg.content}
               </div>
             </div>
           ) : (
             <div key={i} className="flex justify-end">
-              <div className="max-w-[75%] bg-[#1f6feb]/20 border border-[#1f6feb]/40 rounded-lg rounded-tr-none px-4 py-3 text-sm text-[#e6edf3] leading-relaxed">
+              <div className="max-w-[75%] bg-[#d4af6a]/20 border border-[#d4af6a]/40 rounded-lg rounded-tr-none px-4 py-3 text-sm text-[#f4f2ec] leading-relaxed">
                 {msg.content}
               </div>
             </div>
@@ -113,14 +113,14 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
 
         {loading && (
           <div className="flex gap-3 max-w-[85%] mr-auto">
-            <div className="w-8 h-8 rounded-full bg-[#1f6feb] flex items-center justify-center text-[11px] font-bold text-white shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-full bg-[#d4af6a] flex items-center justify-center text-[11px] font-bold text-[#0a0b0d] shrink-0 mt-0.5">
               K
             </div>
-            <div className="bg-[#0d1117] border border-[#30363d] rounded-lg rounded-tl-none px-4 py-3">
+            <div className="bg-[#0a0b0d] border border-[#1f242c] rounded-lg rounded-tl-none px-4 py-3">
               <span className="inline-flex gap-1 items-center h-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#8b949e] animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-[#8b949e] animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-[#8b949e] animate-bounce [animation-delay:300ms]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7a7f88] animate-bounce [animation-delay:0ms]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7a7f88] animate-bounce [animation-delay:150ms]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7a7f88] animate-bounce [animation-delay:300ms]" />
               </span>
             </div>
           </div>
@@ -143,7 +143,7 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
       )}
 
       {/* Input area */}
-      <div className="border-t border-[#30363d] p-3 flex flex-col gap-1.5 shrink-0">
+      <div className="border-t border-[#1f242c] p-3 flex flex-col gap-1.5 shrink-0">
         <div className="flex gap-2 items-end">
           <textarea
             rows={1}
@@ -152,18 +152,18 @@ export function AskTab({ usingTradingTeam }: { usingTradingTeam: boolean }) {
             onKeyDown={handleKeyDown}
             placeholder="Ask KingPin about a trade, holding, or strategy..."
             disabled={loading}
-            className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-[#e6edf3] placeholder:text-[#484f58] resize-none focus:outline-none focus:border-[#58a6ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed leading-relaxed"
+            className="flex-1 bg-[#0a0b0d] border border-[#1f242c] rounded-lg px-3 py-2 text-sm text-[#f4f2ec] placeholder:text-[#5a5f65] resize-none focus:outline-none focus:border-[#d4af6a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed leading-relaxed"
             style={{ minHeight: '38px', maxHeight: '120px' }}
           />
           <button
             onClick={handleSubmit}
             disabled={loading || !input.trim() || overLimit}
-            className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
+            className="px-4 py-2 bg-[#d4af6a] hover:bg-[#e0c088] disabled:opacity-40 disabled:cursor-not-allowed text-[#0a0b0d] text-sm font-medium rounded-lg transition-colors shrink-0 h-[38px]"
           >
             {loading ? '...' : 'Send'}
           </button>
         </div>
-        <div className={`text-[11px] self-end ${nearLimit ? (overLimit ? 'text-[#f85149]' : 'text-[#e3b341]') : 'text-[#484f58]'}`}>
+        <div className={`text-[11px] self-end ${nearLimit ? (overLimit ? 'text-[#f85149]' : 'text-[#e3b341]') : 'text-[#5a5f65]'}`}>
           {charCount}/{MAX_CHARS}
         </div>
       </div>

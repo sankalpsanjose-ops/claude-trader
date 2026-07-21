@@ -18,27 +18,24 @@ interface Props {
   data: PortfolioSummary
   liveStartDate?: string
   startingCapital: number
+  daysSinceAnalysis: number | null
 }
 
-export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
-  const { portfolio, total_pnl, total_pnl_pct, annualised_return, days_running, today_pnl, open_positions } = data
+function fmtLastAnalysis(daysSinceAnalysis: number | null) {
+  if (daysSinceAnalysis === null) return 'No analysis yet'
+  if (daysSinceAnalysis === 0) return 'Today'
+  if (daysSinceAnalysis === 1) return 'Yesterday'
+  return `${daysSinceAnalysis} days ago`
+}
+
+export function SummaryTab({ data, liveStartDate, startingCapital, daysSinceAnalysis }: Props) {
+  const { total_pnl_pct, annualised_return, days_running, today_pnl, open_positions } = data
+  const analysisStale = daysSinceAnalysis !== null && daysSinceAnalysis >= 2
 
   return (
     <div className="space-y-5">
-      {/* Row 1: portfolio value + absolute P&L */}
+      {/* Row 1: run rate, today's P&L, open positions, analysis freshness */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard
-          label="Portfolio Value"
-          value={fmtINR(portfolio.total_value)}
-          sub={`Started ${fmtINR(startingCapital)} · Day ${days_running} (calendar)`}
-        />
-        <StatCard
-          label="Total P&L"
-          value={fmtSigned(total_pnl)}
-          sub={`${total_pnl_pct >= 0 ? '+' : ''}${total_pnl_pct.toFixed(2)}% since inception`}
-          subPositive={total_pnl >= 0}
-          subNegative={total_pnl < 0}
-        />
         <StatCard
           label={days_running >= 90 ? 'Annualised Return' : 'Monthly Run Rate'}
           value={
@@ -53,28 +50,38 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
         <StatCard
           label="Today's P&L"
           value={fmtSigned(today_pnl)}
-          sub={`${open_positions} open position${open_positions !== 1 ? 's' : ''}`}
           subPositive={today_pnl >= 0}
           subNegative={today_pnl < 0}
+        />
+        <StatCard
+          label="Open Positions"
+          value={`${open_positions}`}
+          sub={`position${open_positions !== 1 ? 's' : ''} open`}
+        />
+        <StatCard
+          label="Last Analysis"
+          value={fmtLastAnalysis(daysSinceAnalysis)}
+          subNegative={analysisStale}
+          valueMuted={!analysisStale}
         />
       </div>
 
       {/* Row 2: sector chart + performance chart */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
-          <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-4">
+        <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+          <div className="text-[11px] uppercase tracking-[0.1em] text-[#7a7f88] font-semibold mb-4">
             Sector Allocation
           </div>
           <SectorChart data={data.sector_allocation} />
         </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+        <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold">
+            <div className="text-[11px] uppercase tracking-[0.1em] text-[#7a7f88] font-semibold">
               vs Nifty 50
             </div>
-            <div className="text-xs text-[#8b949e]">
-              Base <span className="text-[#e6edf3]">{fmtINR(startingCapital)}</span>
+            <div className="text-xs text-[#7a7f88]">
+              Base <span className="text-[#f4f2ec]">{fmtINR(startingCapital)}</span>
             </div>
           </div>
           <PerformanceChart data={data.performance_history} benchmark={data.benchmark_history} liveStartDate={liveStartDate} startingCapital={startingCapital} />
@@ -82,13 +89,13 @@ export function SummaryTab({ data, liveStartDate, startingCapital }: Props) {
       </div>
 
       {/* Row 3: raw Nifty index chart */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
-        <div className="text-[11px] uppercase tracking-wider text-[#8b949e] font-semibold mb-3">
+      <div className="bg-[#12151a] border border-[#1f242c] rounded-lg p-4 shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+        <div className="text-[11px] uppercase tracking-[0.1em] text-[#7a7f88] font-semibold mb-3">
           Nifty 50 Index
         </div>
         {data.nifty_raw_history.length > 0
           ? <NiftyChart data={data.nifty_raw_history} />
-          : <div className="flex items-center justify-center h-20 text-sm text-[#6e7681]">Nifty data unavailable — Yahoo Finance may be temporarily down. Refresh to retry.</div>
+          : <div className="flex items-center justify-center h-20 text-sm text-[#7a7f88]">Nifty data unavailable — Yahoo Finance may be temporarily down. Refresh to retry.</div>
         }
       </div>
 

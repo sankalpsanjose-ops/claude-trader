@@ -15,7 +15,7 @@ function formatDate(dateStr: string) {
 export function NiftyChart({ data }: Props) {
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center h-20 text-sm text-[#6e7681]">
+      <div className="flex items-center justify-center h-20 text-sm text-[#7a7f88]">
         Nifty data will appear after the first trading day
       </div>
     )
@@ -34,9 +34,9 @@ export function NiftyChart({ data }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-[#8b949e]">Base</span>
-        <span className="text-[#e6edf3] font-medium">{base.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
-        <span className="text-[#8b949e]">on {formatDate(data[0].date)}</span>
+        <span className="text-[#7a7f88]">Base</span>
+        <span className="text-[#f4f2ec] font-medium">{base.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+        <span className="text-[#7a7f88]">on {formatDate(data[0].date)}</span>
         <span className={isUp ? 'text-[#3fb950]' : 'text-[#f85149]'}>
           {lastPct >= 0 ? '+' : ''}{lastPct.toFixed(2)}% now
         </span>
@@ -45,16 +45,16 @@ export function NiftyChart({ data }: Props) {
         <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: '#6e7681' }}
+            tick={{ fontSize: 10, fill: '#5a5f65' }}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
           />
           <YAxis hide domain={['auto', 'auto']} />
-          <ReferenceLine y={0} stroke="#484f58" strokeDasharray="4 3" />
+          <ReferenceLine y={0} stroke="#5a5f65" strokeDasharray="4 3" />
           <Tooltip
-            contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6, fontSize: 12 }}
-            labelStyle={{ color: '#8b949e' }}
+            contentStyle={{ background: '#12151a', border: '1px solid #1f242c', borderRadius: 6, fontSize: 12 }}
+            labelStyle={{ color: '#7a7f88' }}
             formatter={(_v: unknown, _name: unknown, props: { payload?: { pct: number; close: number } }) => {
               const { pct, close } = props.payload ?? { pct: 0, close: 0 }
               return [
@@ -66,10 +66,10 @@ export function NiftyChart({ data }: Props) {
           <Line
             type="monotone"
             dataKey="pct"
-            stroke="#58a6ff"
+            stroke="#7a7f88"
             strokeWidth={1.5}
             dot={false}
-            activeDot={{ r: 3, fill: '#58a6ff' }}
+            activeDot={{ r: 3, fill: '#7a7f88' }}
             connectNulls
           />
         </LineChart>
