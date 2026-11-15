@@ -11,6 +11,8 @@ export interface TechnicalSignal {
   aboveSma20: boolean
   aboveSma50: boolean
   momentum: 'strong' | 'weak' | 'neutral'
+  /** 10-day price change in percent. Absent on reports stored before 2026-11-15. */
+  momentumPct?: number
   currentPrice: number
   avgVolume20: number
   volumeRatio: number
@@ -48,6 +50,8 @@ export interface EchoReport {
   macroContext: string
   topOpportunities: string[]
   topRisks: string[]
+  /** True when synthesis failed and this is the empty fallback report. */
+  failed?: boolean
 }
 
 export interface IndiaReport {

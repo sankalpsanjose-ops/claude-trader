@@ -4,6 +4,7 @@ import path from 'path'
 import type { Holding, Trade, DailyAnalysis } from '@/types'
 import type { QuoteResult } from '@/lib/yahoo'
 import type { AgentReports } from '@/lib/agents/types'
+import { describeExit, type ExitLevel } from '@/lib/strategy'
 
 export type { QuoteResult }
 
@@ -54,6 +55,10 @@ export interface AgentInput {
   traderProfile?: string
   /** Injected by the trading team orchestrator (team.ts) before calling Foxtrot */
   teamContext?: string
+  /** Code-computed stop levels per holding; any triggered stop is sold automatically. */
+  exit_levels?: ExitLevel[]
+  /** Sprint goal, progress, and today's eligible buys — built by the analyze cron. */
+  sprint_brief?: string
 }
 
 export interface AgentOutput {
@@ -86,7 +91,11 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
         const currentPrice = liveQ?.price ?? h.current_price
         const pnl = (currentPrice - h.buy_price) * h.quantity
         const pnlPct = ((currentPrice - h.buy_price) / h.buy_price) * 100
-        return `  - ${h.name} (${h.symbol}): ${h.quantity} shares @ avg ₹${h.buy_price} | now ₹${currentPrice.toFixed(2)} | P&L: ${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(0)} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)`
+        const exit = input.exit_levels?.find(x => x.symbol === h.symbol)
+        const exitNote = exit
+          ? ` | ${exit.triggered ? 'STOP HIT — auto-sell queued' : describeExit(exit)}`
+          : ''
+        return `  - ${h.name} (${h.symbol}): ${h.quantity} shares @ avg ₹${h.buy_price} since ${h.buy_date} | now ₹${currentPrice.toFixed(2)} | P&L: ${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(0)} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)${exitNote}`
       }).join('\n')
 
   const marketSummary = input.watchlist_quotes
@@ -123,7 +132,7 @@ export async function runDailyAnalysis(input: AgentInput): Promise<AgentOutput> 
     ? `${priceNote} Next market open is ${input.execution_date}. Do NOT queue any trades today — write your journal and market observations only. Set all decisions to HOLD.`
     : `${priceNote} Trades will execute at tomorrow's (${input.execution_date}) market open.`
 
-  const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}Today is ${input.today_date}. ${executionNote}
+  const userMessage = `${input.teamContext ? input.teamContext + '\n\n' : ''}${input.sprint_brief ? input.sprint_brief + '\n\n' : ''}Today is ${input.today_date}. ${executionNote}
 
 Here is my current situation:
 
@@ -144,32 +153,39 @@ ${recentTradesSummary}
 MY PAST JOURNAL ENTRIES
 ${pastJournals}
 
-Based on this, decide what to do. Respond with JSON matching this exact schema:
-{
-  "journal": "Your honest, detailed market commentary — what you saw today, your thesis, what you're thinking",
-  "market_summary": "One sentence: overall market mood today",
-  "decisions": [
-    {
-      "symbol": "SYMBOL.NS",
-      "action": "BUY" | "SELL" | "HOLD",
-      "quantity": <integer, required for BUY/SELL>,
-      "rationale": "One clear sentence explaining why"
-    }
-  ],
-  "watchlist_update": ["SYMBOL.NS", "SYMBOL.BO"],
-  "learning": {
-    "insight": "One concrete lesson from today — something that reinforces, challenges, or updates your trading approach",
-    "category": "sizing" | "exits" | "patience" | "sector" | "risk" | "process"
-  }
-}`
+Based on this, decide what to do.
 
-  const message = await client.messages.create({
+Field guidance:
+- journal: your honest, detailed market commentary — what you saw today, your thesis, what you're thinking.
+- market_summary: one sentence on the overall market mood today.
+- decisions: one entry per trade. quantity is required for BUY and SELL (a positive integer); use 0 for HOLD. rationale is one clear sentence.
+- watchlist_update: NSE (.NS) or BSE (.BO) symbols to watch next session.
+- learning: one concrete lesson from today that reinforces, challenges, or updates your approach.`
+
+  const request = {
     model: 'claude-sonnet-5',
-    max_tokens: 12000,
+    max_tokens: 16000,
     system: buildSystemPrompt(profile),
-    messages: [{ role: 'user', content: userMessage }],
-  })
+    messages: [{ role: 'user' as const, content: userMessage }],
+  }
+  let message
+  try {
+    message = await client.messages.create({
+      ...request,
+      output_config: { format: { type: 'json_schema', schema: FOXTROT_SCHEMA } },
+    })
+  } catch (e) {
+    // Structured outputs were untested live when this shipped — if the API
+    // rejects the parameter, fall back to free-text JSON rather than lose the day.
+    if (!(e instanceof Anthropic.BadRequestError)) throw e
+    console.error('[Foxtrot] Structured output rejected, retrying as free text:', e.message)
+    message = await client.messages.create({
+      ...request,
+      messages: [{ role: 'user', content: `${userMessage}\n\nRespond with JSON only, matching this schema:\n${JSON.stringify(FOXTROT_SCHEMA)}` }],
+    })
+  }
 
+  if (message.stop_reason === 'max_tokens') throw new Error('Foxtrot hit max_tokens before finishing')
   // Sonnet 5 runs adaptive thinking by default, so content[0] may be a
   // thinking block — take the last text block instead.
   const textBlocks = message.content.filter(b => b.type === 'text')
@@ -179,6 +195,40 @@ Based on this, decide what to do. Respond with JSON matching this exact schema:
 
   return JSON.parse(jsonMatch[0]) as AgentOutput
 }
+
+const FOXTROT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['journal', 'market_summary', 'decisions', 'watchlist_update', 'learning'],
+  properties: {
+    journal: { type: 'string' },
+    market_summary: { type: 'string' },
+    decisions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['symbol', 'action', 'quantity', 'rationale'],
+        properties: {
+          symbol: { type: 'string' },
+          action: { type: 'string', enum: ['BUY', 'SELL', 'HOLD'] },
+          quantity: { type: 'integer' },
+          rationale: { type: 'string' },
+        },
+      },
+    },
+    watchlist_update: { type: 'array', items: { type: 'string' } },
+    learning: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['insight', 'category'],
+      properties: {
+        insight: { type: 'string' },
+        category: { type: 'string', enum: ['sizing', 'exits', 'patience', 'sector', 'risk', 'process'] },
+      },
+    },
+  },
+} as const
 
 export async function reviseFoxtrotDecisions(
   decisions: AgentOutput['decisions'],

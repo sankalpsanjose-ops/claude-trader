@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { getQuotes, DEFAULT_WATCHLIST } from '@/lib/yahoo'
+import { getQuotes, getClosesSince, DEFAULT_WATCHLIST } from '@/lib/yahoo'
 import { runDailyAnalysis, reviseFoxtrotDecisions, loadTraderProfileFromFile } from '@/lib/claude'
 import type { AgentOutput } from '@/lib/claude'
 import { runTradingTeam } from '@/lib/agents/team'
+import { runBravo } from '@/lib/agents/bravo'
+import {
+  SPRINT, NIFTY_SYMBOL, computeExitLevel, describeExit, marketRegimeOk, pickMomentumCandidates,
+  type ExitLevel,
+} from '@/lib/strategy'
+import type { BravoReport } from '@/lib/agents/types'
 import { validateDecisions, sanityCheckDecisions } from '@/lib/validator'
 import { isTradingDay, isTomorrowTradingDay, getNextTradingDay } from '@/lib/market-calendar'
 import { STARTING_CAPITAL } from '@/lib/trading'
 import { sendNewsletter } from '@/lib/newsletter'
 import { todayIST, offsetDaysIST } from '@/lib/ist'
-import type { Holding, Trade, DailyAnalysis } from '@/types'
+import type { Holding, Trade, DailyAnalysis, TradeDecision } from '@/types'
 
 export const maxDuration = 300
 
@@ -56,6 +62,52 @@ async function getActiveProfile(): Promise<string> {
   return fileContent
 }
 
+function buildSprintBrief(args: {
+  today: string
+  totalValue: number
+  regimeOk: boolean
+  nifty: BravoReport['signals'][string] | undefined
+  candidates: string[]
+  bravo: BravoReport
+  priceMap: Record<string, number>
+  heldCount: number
+  autoExits: ExitLevel[]
+}): string {
+  const { today, totalValue, regimeOk, nifty, candidates, bravo, priceMap, heldCount, autoExits } = args
+  const gap = SPRINT.GOAL_VALUE - totalValue
+  const lines = [
+    '═══════════════════════════════════════════════',
+    `SPRINT MANDATE — ${today} (ends ${SPRINT.END_DATE} close)`,
+    '═══════════════════════════════════════════════',
+    `Goal: portfolio ≥ ₹${SPRINT.GOAL_VALUE.toLocaleString('en-IN')} at the ${SPRINT.END_DATE} close. Checkpoint: ≥ ₹${SPRINT.CHECKPOINT_VALUE.toLocaleString('en-IN')} by ${SPRINT.CHECKPOINT_DATE}.`,
+    `Now: ₹${totalValue.toFixed(0)} — ${gap > 0 ? `₹${gap.toFixed(0)} (${((gap / totalValue) * 100).toFixed(2)}%) short of goal` : 'goal reached — protect it'}.`,
+    'If the goal is missed, the project is shut down.',
+    '',
+    'RULES ENFORCED IN CODE (a decision that breaks one is rejected — do not propose it):',
+    `- Exits are automatic: hard stop −${SPRINT.STOP_PCT * 100}% from entry; once a holding has closed ≥ +${SPRINT.BREAKEVEN_TRIGGER_PCT * 100}% above entry its stop moves to breakeven; once ≥ +${SPRINT.TRAIL_TRIGGER_PCT * 100}%, the stop trails ${SPRINT.TRAIL_PCT * 100}% below the highest close. You may still sell earlier on a broken thesis or to rotate into a stronger name.`,
+    `- BUY only names on the ELIGIBLE list below (above 20- and 50-day averages, positive 10-day momentum, RSI ≤ ${SPRINT.RSI_MAX}) that Echo rates bullish with high or medium conviction.`,
+    `- No new buys while Nifty is below its 50-day average.`,
+    `- Max ${SPRINT.MAX_POSITIONS} positions. You hold ${heldCount}${heldCount >= SPRINT.MAX_POSITIONS ? ' — to open anything new you must fully exit laggards first (same-day sell proceeds fund buys; sells execute before buys)' : ''}.`,
+    `- New position ≥ ${SPRINT.MIN_NEW_POSITION_PCT * 100}% of portfolio (target 16–18%); max 20% per stock; ₹50,000 cash floor. Adds to an existing winner ≥ ₹${SPRINT.MIN_ADD_VALUE.toLocaleString('en-IN')}.`,
+    '',
+    'Strategy: concentrate in the strongest uptrends and cut laggards. Do not buy dips in falling stocks.',
+    '',
+    `MARKET REGIME: Nifty ${nifty ? `RSI ${nifty.rsi14}, ${nifty.aboveSma50 ? 'above' : 'below'} 50-day avg, 10d ${nifty.momentumPct ?? '?'}%` : 'data unavailable'} → new buys ${regimeOk ? 'ALLOWED' : 'BLOCKED'}`,
+  ]
+  if (autoExits.length) {
+    lines.push('', 'AUTO-EXITS QUEUED FOR NEXT OPEN (stop hit):')
+    for (const x of autoExits) lines.push(`  ${x.symbol}: close ₹${x.price.toFixed(2)} ≤ ${describeExit(x)}`)
+  }
+  lines.push('', 'ELIGIBLE BUYS (ranked by 10-day momentum):')
+  if (candidates.length === 0) lines.push('  none today')
+  for (const sym of candidates) {
+    const t = bravo.signals[sym]
+    lines.push(`  ${sym}: ₹${(priceMap[sym] ?? t.currentPrice).toFixed(2)} | 10d ${t.momentumPct}% | RSI ${t.rsi14} | vol ${t.volumeRatio}x`)
+  }
+  lines.push('═══════════════════════════════════════════════')
+  return lines.join('\n')
+}
+
 export async function GET(req: NextRequest) {
   const secret = req.headers.get('authorization')?.replace('Bearer ', '')
   if (secret !== process.env.CRON_SECRET) {
@@ -93,11 +145,45 @@ export async function GET(req: NextRequest) {
   const savedWatchlist: string[] = (latestAnalysis?.watchlist as string[]) ?? []
   const heldSymbols = holdings.map(h => h.symbol)
   const watchlist = [...new Set([...DEFAULT_WATCHLIST, ...savedWatchlist, ...heldSymbols])]
-  const [quotes, niftyClose] = await Promise.all([
+  const [quotes, niftyClose, bravo, closesSinceEntry] = await Promise.all([
     getQuotes(watchlist),
     fetchNiftyClose(),
+    runBravo([...watchlist, NIFTY_SYMBOL]),
+    getClosesSince(holdings.map(h => ({ symbol: h.symbol, since: h.buy_date }))),
   ])
   const priceMap = Object.fromEntries(quotes.map(q => [q.symbol, q.price]))
+
+  // Code-enforced exits: stop levels from entry price + closes since entry.
+  const exitLevels: ExitLevel[] = holdings
+    .filter(h => priceMap[h.symbol] != null)
+    .map(h => computeExitLevel(h.symbol, h.buy_price, closesSinceEntry[h.symbol] ?? [], priceMap[h.symbol]))
+  const autoExits = exitLevels.filter(x => x.triggered)
+  const autoExitDecisions: TradeDecision[] = autoExits.map(x => ({
+    symbol: x.symbol,
+    action: 'SELL',
+    quantity: holdings.find(h => h.symbol === x.symbol)!.quantity,
+    rationale: `[AUTO-EXIT] Close ₹${x.price.toFixed(2)} hit ${x.stopKind} stop ₹${x.stop} (entry ₹${x.entry}, high ₹${x.highWater.toFixed(2)})`,
+  }))
+
+  const quoteMap = Object.fromEntries(quotes.map(q => [q.symbol, q]))
+  async function queuePendingTrades(trades: TradeDecision[]) {
+    if (trades.length === 0) return
+    await supabaseAdmin.from('pending_trades').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+    await supabaseAdmin.from('pending_trades').insert(
+      trades.map(d => ({
+        symbol: d.symbol,
+        name: quoteMap[d.symbol]?.name ?? d.symbol,
+        exchange: d.symbol.endsWith('.BO') ? 'BSE' : 'NSE',
+        action: d.action,
+        quantity: d.quantity!,
+        rationale: d.rationale,
+      }))
+    )
+  }
+
+  const niftySignal = bravo.signals[NIFTY_SYMBOL]
+  const regimeOk = marketRegimeOk(niftySignal)
+  const candidates = pickMomentumCandidates(bravo.signals, heldSymbols)
 
   const marketValue = holdings.reduce((sum, h) => {
     return sum + (priceMap[h.symbol] ?? h.current_price) * h.quantity
@@ -120,12 +206,17 @@ export async function GET(req: NextRequest) {
     execution_date: executionDate,
     observe_only: observeOnly,
     traderProfile,
+    exit_levels: exitLevels,
+    sprint_brief: buildSprintBrief({
+      today, totalValue, regimeOk, nifty: niftySignal, candidates, bravo, priceMap,
+      heldCount: holdings.length, autoExits,
+    }),
   }
 
   let analysis: AgentOutput
   try {
     analysis = process.env.USE_TRADING_TEAM === 'true'
-      ? await runTradingTeam(agentInput)
+      ? await runTradingTeam(agentInput, bravo, candidates)
       : await runDailyAnalysis(agentInput)
   } catch (e) {
     // Without this, a failed LLM call (e.g. insufficient API credit) throws here
@@ -133,39 +224,62 @@ export async function GET(req: NextRequest) {
     // no audit, no pending trade — leaving no trace that anything went wrong.
     const message = e instanceof Error ? e.message : String(e)
     console.error('[analyze] Analysis failed:', message)
+    // Stops are mechanical — they still go out when the model call fails.
+    const queuedExits = observeOnly ? [] : autoExitDecisions
+    await queuePendingTrades(queuedExits)
     await supabaseAdmin.from('audits').upsert({
       date: today,
       decisions_raw: [],
-      decisions_valid: [],
+      decisions_valid: queuedExits,
       rejections: [],
       sanity_passed: false,
-      sanity_notes: `Analysis failed: ${message}`,
+      sanity_notes: `Analysis failed: ${message}${queuedExits.length ? ` — auto-exits still queued: ${queuedExits.map(d => d.symbol).join(', ')}` : ''}`,
     })
     return NextResponse.json({ error: 'Analysis failed', detail: message }, { status: 500 })
   }
 
-  let { valid, rejected } = validateDecisions(analysis.decisions, {
+  // Echo's ratings gate new buys. Without the team (or if Echo failed) no buys go through.
+  const echo = analysis.agent_reports?.echo
+  const intelOk = !!echo && !echo.failed
+  const validationCtx = {
     cash: portfolio.cash,
     total_value: totalValue,
     holdings: holdings.map(h => ({ symbol: h.symbol, quantity: h.quantity, buy_price: h.buy_price })),
     prices: priceMap,
-  })
+    sprint: {
+      signals: bravo.signals,
+      regimeOk,
+      intelOk,
+      echo: echo?.perSymbol ?? {},
+    },
+  }
+  // Auto-exits override whatever the model said about those symbols.
+  const autoExitSymbols = new Set(autoExitDecisions.map(d => d.symbol))
+  const withAutoExits = (decisions: TradeDecision[]) => [
+    ...autoExitDecisions.map(d => ({ ...d })),
+    ...decisions.filter(d => !autoExitSymbols.has(d.symbol)),
+  ]
 
-  let sanity = await sanityCheckDecisions(valid, priceMap, analysis.journal)
+  let { valid, rejected } = validateDecisions(withAutoExits(analysis.decisions), validationCtx)
+
+  const modelDecisions = (ds: TradeDecision[]) => ds.filter(d => !d.rationale.startsWith('[AUTO-EXIT]'))
+  let sanity = await sanityCheckDecisions(modelDecisions(valid), priceMap, analysis.journal)
 
   // If Hotel warns, give Foxtrot one revision pass — no further retries
-  if (!sanity.passed && !observeOnly && valid.some(d => d.action !== 'HOLD')) {
-    const revised = await reviseFoxtrotDecisions(valid, sanity.notes, traderProfile)
-    const reValidated = validateDecisions(revised, {
-      cash: portfolio.cash,
-      total_value: totalValue,
-      holdings: holdings.map(h => ({ symbol: h.symbol, quantity: h.quantity, buy_price: h.buy_price })),
-      prices: priceMap,
-    })
+  if (!sanity.passed && !observeOnly && modelDecisions(valid).some(d => d.action !== 'HOLD')) {
+    const revised = await reviseFoxtrotDecisions(modelDecisions(valid), sanity.notes, traderProfile)
+    const reValidated = validateDecisions(withAutoExits(revised), validationCtx)
     valid = reValidated.valid
     rejected = [...rejected, ...reValidated.rejected]
-    sanity = await sanityCheckDecisions(valid, priceMap, analysis.journal)
+    sanity = await sanityCheckDecisions(modelDecisions(valid), priceMap, analysis.journal)
   }
+
+  const health = [
+    `[health] echo=${intelOk ? 'ok' : 'FAILED'}`,
+    `regime=${regimeOk ? 'on' : 'off'}`,
+    `candidates=${candidates.length}`,
+    `auto_exits=${autoExits.map(x => x.symbol).join(',') || 'none'}`,
+  ].join(' ')
 
   await Promise.all([
     supabaseAdmin.from('daily_analyses').upsert({
@@ -188,7 +302,7 @@ export async function GET(req: NextRequest) {
         reason: r.reason,
       })),
       sanity_passed: sanity.passed,
-      sanity_notes: sanity.notes,
+      sanity_notes: `${health}\n${sanity.notes}`,
     }),
     supabaseAdmin.from('portfolio_snapshots').upsert({
       date: today,
@@ -207,20 +321,8 @@ export async function GET(req: NextRequest) {
   ])
 
   const tradesToQueue = observeOnly ? [] : valid.filter(d => d.action !== 'HOLD' && d.quantity)
-  if (tradesToQueue.length > 0) {
-    await supabaseAdmin.from('pending_trades').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-    const quoteMap = Object.fromEntries(quotes.map(q => [q.symbol, q]))
-    await supabaseAdmin.from('pending_trades').insert(
-      tradesToQueue.map(d => ({
-        symbol: d.symbol,
-        name: quoteMap[d.symbol]?.name ?? d.symbol,
-        exchange: d.symbol.endsWith('.BO') ? 'BSE' : 'NSE',
-        action: d.action,
-        quantity: d.quantity!,
-        rationale: d.rationale,
-      }))
-    )
-  }
+  await queuePendingTrades(tradesToQueue)
+
 
   sendNewsletter({
     date: today,
@@ -245,6 +347,7 @@ export async function GET(req: NextRequest) {
     decisions_valid: valid.length,
     decisions_rejected: rejected.map(r => ({ symbol: r.decision.symbol, reason: r.reason })),
     sanity_check: sanity,
+    health,
     learning: analysis.learning ?? null,
     journal_preview: analysis.journal.slice(0, 100),
   })

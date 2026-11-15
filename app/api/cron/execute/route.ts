@@ -28,7 +28,10 @@ export async function GET(req: NextRequest) {
 
   if (portfolioRes.error) return NextResponse.json({ error: portfolioRes.error.message }, { status: 500 })
 
-  const pending: PendingTrade[] = pendingRes.data ?? []
+  // SELLs first: their proceeds fund same-day BUYs (the validator assumes this order).
+  const pending: PendingTrade[] = [...(pendingRes.data ?? [])].sort(
+    (a, b) => (a.action === 'SELL' ? 0 : 1) - (b.action === 'SELL' ? 0 : 1),
+  )
   if (pending.length === 0) return NextResponse.json({ ok: true, executed: 0 })
 
   const portfolio = portfolioRes.data

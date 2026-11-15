@@ -64,6 +64,7 @@ export async function runBravo(symbols: string[]): Promise<BravoReport> {
       aboveSma20: currentPrice > sma20,
       aboveSma50: currentPrice > sma50,
       momentum,
+      momentumPct: Math.round(momentumPct * 10) / 10,
       currentPrice,
       avgVolume20: Math.round(avgVolume20),
       volumeRatio,

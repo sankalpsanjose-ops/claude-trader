@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinanceClass = require('yahoo-finance2').default
-const yahooFinance = new YahooFinanceClass({ suppressNotices: ['yahooSurvey'] })
+const yahooFinance = new YahooFinanceClass({ suppressNotices: ['yahooSurvey', 'ripHistorical'] })
 
 export interface QuoteResult {
   symbol: string
@@ -110,6 +110,35 @@ export async function getHistoricals(symbols: string[], days = 60): Promise<Reco
             close: (row.adjclose as number) ?? (row.close as number) ?? 0,
             volume: (row.volume as number) ?? 0,
           }))
+      } catch {
+        result[symbol] = []
+      }
+    }))
+  }
+
+  return result
+}
+
+/**
+ * Raw (unadjusted) daily closes from each symbol's own start date to today.
+ * Unadjusted so they compare directly with stored buy prices.
+ */
+export async function getClosesSince(
+  starts: Array<{ symbol: string; since: string }>,
+): Promise<Record<string, number[]>> {
+  const today = new Date().toISOString().split('T')[0]
+  const result: Record<string, number[]> = {}
+
+  for (let i = 0; i < starts.length; i += 5) {
+    const batch = starts.slice(i, i + 5)
+    await Promise.allSettled(batch.map(async ({ symbol, since }) => {
+      try {
+        const rows = await yahooFinance.historical(
+          symbol,
+          { period1: since, period2: today, interval: '1d' },
+          { validateResult: false },
+        ) as Array<{ close?: number | null }>
+        result[symbol] = rows.map(r => r.close).filter((c): c is number => c != null && c > 0)
       } catch {
         result[symbol] = []
       }

@@ -2,12 +2,11 @@ import { runDailyAnalysis } from '@/lib/claude'
 import type { AgentInput, AgentOutput } from '@/lib/claude'
 import { supabaseAdmin } from '@/lib/supabase'
 import { runAlpha } from './alpha'
-import { runBravo } from './bravo'
 import { runCharlie } from './charlie'
 import { runDelta } from './delta'
 import { runEcho } from './echo'
 import { runIndia } from './india'
-import type { AlphaReport, EchoReport, AgentReports } from './types'
+import type { AlphaReport, BravoReport, EchoReport, AgentReports } from './types'
 
 async function readMacroMemory(): Promise<string> {
   const { data } = await supabaseAdmin
@@ -93,17 +92,20 @@ function buildTeamContext(echo: EchoReport, alpha: AlphaReport): string {
   return lines.join('\n')
 }
 
-export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
+/**
+ * @param bravo Technicals for the full watchlist, computed by the caller (pure math, no LLM).
+ * @param candidates Today's momentum buy candidates, ranked — see pickMomentumCandidates.
+ */
+export async function runTradingTeam(
+  input: AgentInput,
+  bravo: BravoReport,
+  candidates: string[],
+): Promise<AgentOutput> {
   const heldSymbols = input.holdings.map(h => h.symbol)
-  const allSymbols = input.watchlist_quotes.map(q => q.symbol)
 
-  // Top movers for Charlie context and Delta prioritisation
-  const topMovers = [...input.watchlist_quotes]
-    .sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct))
-    .slice(0, 20)
-
-  // Delta: held positions first (always review), then top movers — cap at 20
-  const deltaSymbols = [...new Set([...heldSymbols, ...topMovers.map(q => q.symbol)])].slice(0, 20)
+  // Research focus: what we hold plus what we could buy. Echo rates only these.
+  const focusSymbols = [...new Set([...heldSymbols, ...candidates])]
+  const candidateQuotes = input.watchlist_quotes.filter(q => candidates.includes(q.symbol))
 
   // Read macro memory and any pending user intel before running agents
   const [existingMacroMemory, userNote] = await Promise.all([
@@ -111,18 +113,17 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
     readUserIntel(),
   ])
 
-  // Phase 1: all specialists in parallel
-  // Bravo runs on full watchlist (pure math, no LLM)
-  // Delta runs on held + top 20 movers
-  // Charlie receives macro memory and updates it
+  // Phase 1: specialists in parallel
+  // Delta runs on held + momentum candidates (cap 20)
+  // Charlie researches news on held + candidates and updates macro memory
   // India runs only when user has submitted a note
-  const [alphaReport, bravoReport, charlieReport, deltaReport, indiaReport] = await Promise.all([
+  const [alphaReport, charlieReport, deltaReport, indiaReport] = await Promise.all([
     runAlpha(),
-    runBravo(allSymbols),
-    runCharlie(topMovers.slice(0, 10), heldSymbols, existingMacroMemory),
-    runDelta(deltaSymbols),
+    runCharlie(candidateQuotes.slice(0, 10), heldSymbols, existingMacroMemory),
+    runDelta(focusSymbols.slice(0, 20)),
     userNote ? runIndia(userNote) : Promise.resolve(null),
   ])
+  const bravoReport = bravo
 
   // Persist updated macro memory (fire and forget — never block the pipeline)
   if (charlieReport.macroMemory) {
@@ -142,6 +143,7 @@ export async function runTradingTeam(input: AgentInput): Promise<AgentOutput> {
   const echoReport = await runEcho(
     alphaReport, bravoReport, charlieReport, deltaReport,
     charlieReport.macroMemory,
+    focusSymbols,
     indiaReport ?? undefined,
   )
 
